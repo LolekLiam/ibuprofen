@@ -9,6 +9,7 @@ import java.util.Locale
 
 object SchoolPageParser {
     private val idRegex = Regex("var\\s+id_sola\\s*=\\s*'(?<id>\\d+)'")
+    private val weekRegex = Regex("Teden\\s+(\\d+)")
 
     fun parse(html: String, schoolKey: String): SchoolMeta {
         val doc = Jsoup.parse(html)
@@ -21,7 +22,19 @@ object SchoolPageParser {
             ClassInfo(id = id, label = opt.text().trim())
         }
 
-        return SchoolMeta(schoolKey = schoolKey, schoolId = schoolId, classes = classes)
+        val schoolName = doc.selectFirst("div.urnik_title")?.text()?.trim()
+        val tedniToggle = doc.selectFirst("#tedni-toggle")?.text()?.trim()?.replace("\n", " ")?.replace("\\s+".toRegex(), " ")
+        val currentWeekId = tedniToggle?.let { weekRegex.find(it)?.groupValues?.getOrNull(1)?.toIntOrNull() }
+        val currentWeekLabel = tedniToggle
+
+        return SchoolMeta(
+            schoolKey = schoolKey,
+            schoolId = schoolId,
+            classes = classes,
+            schoolName = schoolName,
+            currentWeekId = currentWeekId,
+            currentWeekLabel = currentWeekLabel
+        )
     }
 }
 
