@@ -15,16 +15,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
@@ -36,11 +33,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ravijol1.ibuprofen.data.ClassInfo
 import com.ravijol1.ibuprofen.data.NetworkProvider
 import com.ravijol1.ibuprofen.data.PeriodCell
@@ -51,7 +50,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -228,10 +226,15 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
     Column(modifier = modifier.padding(16.dp)) {
         Text(text = schoolMeta?.schoolName ?: "eAsistent Timetables", fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
-
-        // Row 2: Teacher mode toggle + Teacher dropdown
+        // Row 2: Class dropdown + Week controls (disabled in teacher mode)
+        val classes = schoolMeta?.classes.orEmpty()
+        val weekLabel = "Week $weekId"
+        // Row A: Class selector only (disabled in Teacher mode)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            OutlinedButton(onClick = { classMenuExpanded = true }, enabled = !teacherMode && classes.isNotEmpty()) {
+                Text(selectedClass?.label ?: "Select class")
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = teacherMode, onCheckedChange = { enabled ->
                     teacherMode = enabled
                     if (enabled) {
@@ -262,7 +265,6 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                         loadTimetable()
                     }
                 })
-                Spacer(Modifier.width(4.dp))
                 Text("Teacher mode")
             }
             OutlinedButton(onClick = { teacherMenuExpanded = true }, enabled = teacherMode && teachers.isNotEmpty()) {
@@ -278,18 +280,6 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                         }
                     })
                 }
-            }
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        // Row 3: Class dropdown + Week controls (disabled in teacher mode)
-        val classes = schoolMeta?.classes.orEmpty()
-        val weekLabel = "Teden $weekId"
-        // Row A: Class selector only (disabled in Teacher mode)
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(onClick = { classMenuExpanded = true }, enabled = !teacherMode && classes.isNotEmpty()) {
-                Text(selectedClass?.label ?: "Select class")
             }
         }
         // Dropdown menu as sibling so it can overflow properly
@@ -312,7 +302,28 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                     scheduleWeekChange(weekId - 1)
                 }
             }) { Text("Week -") }
-            Text(weekLabel, modifier = Modifier.weight(1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+            val displayWeek = if (teacherMode) teacherWeek else timetable
+            val week = displayWeek
+            val df = DateTimeFormatter.ofPattern("d. M. yyyy")
+            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    weekLabel,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+
+                if (week != null) {
+                    Text(
+                        "${week.weekStart.format(df)} - ${week.weekEnd.format(df)}",
+                        fontSize = 14.sp,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
             OutlinedButton(onClick = {
                 if (weekId < 52) {
                     scheduleWeekChange(weekId + 1)
@@ -332,14 +343,8 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
         }
 
         val displayWeek = if (teacherMode) teacherWeek else timetable
-        if (teacherMode) {
-            Text(text = "Teacher mode: ${selectedTeacher ?: "No teacher selected"}")
-        }
         if (displayWeek != null) {
             val week = displayWeek
-            val df = DateTimeFormatter.ofPattern("d. M. yyyy")
-            Text("${week.weekStart.format(df)} - ${week.weekEnd.format(df)}")
-
             // Day selector: All + per-day buttons (horizontally scrollable)
             Spacer(Modifier.height(6.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
@@ -419,7 +424,13 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    name = "407x904dp",
+    widthDp = 407,
+    heightDp = 904,
+    showSystemUi = true,
+    showBackground = true
+)
 @Composable
 fun TimetablePreview() {
     IbuprofenTheme {
