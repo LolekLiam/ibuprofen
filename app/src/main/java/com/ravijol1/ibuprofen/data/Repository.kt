@@ -1,6 +1,17 @@
 package com.ravijol1.ibuprofen.data
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import java.util.concurrent.ConcurrentHashMap
+
 class TimetableRepository(private val api: EAsistentApi) {
+    // In-memory cache: (schoolId, classId, weekId) -> TimetableWeek
+    private val weekCache = ConcurrentHashMap<Triple<Int, Int, Int>, TimetableWeek>()
+
     suspend fun loadSchoolMeta(schoolKey: String): SchoolMeta {
         val res = api.getSchoolPage(schoolKey)
         val body = res.body() ?: error("Empty school page")
@@ -9,27 +20,36 @@ class TimetableRepository(private val api: EAsistentApi) {
 
     suspend fun loadTimetableWeek(schoolId: Int, classId: Int, weekId: Int): TimetableWeek {
         require(weekId in 0..52) { "weekId out of range" }
+        val key = Triple(schoolId, classId, weekId)
+        weekCache[key]?.let { return it }
         val res = api.getTimetable(schoolId, classId, weekId = weekId)
         val body = res.body() ?: error("Empty timetable body")
-        return TimetableParser.parse(classId, body)
+        val parsed = TimetableParser.parse(classId, body)
+        weekCache[key] = parsed
+        return parsed
     }
 
-    // Load timetables for all classes for a given week (sequential to stay polite to server)
+    // Load timetables for all classes for a given week with limited parallelism and caching
     suspend fun loadAllTimetablesForWeek(
         schoolId: Int,
         classes: List<ClassInfo>,
-        weekId: Int
-    ): List<TimetableWeek> {
-        val result = mutableListOf<TimetableWeek>()
-        for (cls in classes) {
-            try {
-                val week = loadTimetableWeek(schoolId, cls.id, weekId)
-                result += annotateWeekWithClassLabel(week, cls.label)
-            } catch (_: Throwable) {
-                // ignore individual failures
+        weekId: Int,
+        parallelism: Int = 6
+    ): List<TimetableWeek> = coroutineScope {
+        val sem = Semaphore(parallelism)
+        val deferred = classes.map { cls ->
+            async(Dispatchers.IO) {
+                try {
+                    sem.withPermit {
+                        val week = loadTimetableWeek(schoolId, cls.id, weekId)
+                        annotateWeekWithClassLabel(week, cls.label)
+                    }
+                } catch (_: Throwable) {
+                    null
+                }
             }
         }
-        return result
+        deferred.awaitAll().filterNotNull()
     }
 
     private fun annotateWeekWithClassLabel(week: TimetableWeek, classLabel: String): TimetableWeek {
