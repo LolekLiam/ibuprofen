@@ -7,7 +7,10 @@ import java.time.LocalTime
 data class SchoolMeta(
     val schoolKey: String,
     val schoolId: Int,
-    val classes: List<ClassInfo>
+    val classes: List<ClassInfo>,
+    val schoolName: String? = null,
+    val currentWeekId: Int? = null,
+    val currentWeekLabel: String? = null
 )
 
 data class ClassInfo(
