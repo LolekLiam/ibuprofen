@@ -40,13 +40,14 @@ object SchoolPageParser {
 
 object TimetableParser {
     private const val US = '\u001F'
+    @Suppress("DEPRECATION")
     private val dateFull = DateTimeFormatter.ofPattern("d. M. yyyy").withLocale(Locale("sl", "SI"))
     private val timeRangeRegex = Regex("(\\d{1,2}:\\d{2})\\s*-\\s*(\\d{1,2}:\\d{2})")
     private val timeHM = DateTimeFormatter.ofPattern("H:mm")
 
     private fun parseTimeOrNull(text: String): LocalTime? = try {
         LocalTime.parse(text.trim(), timeHM)
-    } catch (t: Throwable) { null }
+    } catch (_: Throwable) { null }
 
     fun parse(classId: Int, payload: String): TimetableWeek {
         val parts = payload.split(US)
@@ -78,6 +79,7 @@ object TimetableParser {
             if (tds.isEmpty()) continue
 
             val left = tds.first()
+            if (left != null) {
             val periodNumber = left.selectFirst(".naziv-ure")?.text()?.substringBefore('.')?.trim()?.toIntOrNull()
                 ?: (periodIdx + 1)
             val timeRangeText = left.selectFirst(".potek-ure")?.text()?.trim().orEmpty()
@@ -109,7 +111,7 @@ object TimetableParser {
                 )
             }
             daysByPeriod += perDay
-        }
+        }}
 
         val dayCount = dayDates.size.coerceAtMost(5)
         val periodsPerDay = MutableList(dayCount) { mutableListOf<PeriodCell>() }
