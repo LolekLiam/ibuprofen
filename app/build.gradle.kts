@@ -10,10 +10,10 @@ android {
 
     defaultConfig {
         applicationId = "com.ravijol1.ibuprofen"
-        minSdk = 30
+        minSdk = 29
         targetSdk = 36
         versionCode = 1
-        versionName = "v0.3.0-alpha"
+        versionName = "v0.4.0-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -55,11 +55,15 @@ dependencies {
     // Networking and parsing
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-scalars:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
     implementation("org.jsoup:jsoup:1.21.2")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+
+    // Security for encrypted storage
+    implementation("androidx.security:security-crypto:1.1.0")
 
     // Java time desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
