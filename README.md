@@ -16,3 +16,11 @@ Special thanks to eAsistent dev team za NIČ ker nimate javnega API-ja in ker ga
 - add easistent auth
 - fuck easistent, free redovalnice za vse
 - possibly scale up
+
+# Disclaimer
+This project was created by observing publicly visible network traffic in the eAsistent web application.
+No proprietary code, assets, or private API keys were used or reverse-engineered.
+All communication happens entirely through publicly accessible endpoints.
+
+This project is not affiliated with nor endorsed by eAsistent.
+All trademarks belong to their respective owners.
