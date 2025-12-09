@@ -35,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,11 +46,17 @@ import com.ravijol1.ibuprofen.data.NetworkProvider
 import com.ravijol1.ibuprofen.data.PeriodCell
 import com.ravijol1.ibuprofen.data.SchoolMeta
 import com.ravijol1.ibuprofen.data.TimetableWeek
+import com.ravijol1.ibuprofen.data.TokenStore
+import com.ravijol1.ibuprofen.data.AuthRepository
+import com.ravijol1.ibuprofen.data.ChildProfile
 import com.ravijol1.ibuprofen.ui.theme.IbuprofenTheme
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
+
+// App tabs
+enum class AppTab { Login, Public, Child, Grades }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,6 +75,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TimetableScreen(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
+    // Auth/session
+    val context = LocalContext.current
+    val tokenStore = remember(context) { TokenStore(context.applicationContext) }
+    val authRepo = remember { AuthRepository(NetworkProvider.authApi, tokenStore) }
+    var session by remember { mutableStateOf(authRepo.currentSession()) }
+
+    // Tabs
+    var selectedTab by remember { mutableStateOf(AppTab.Public) }
+
     var schoolKey by remember { mutableStateOf("5738623c4f3588f82583378c44ceb026102d6bae") }
 
     var schoolMeta by remember { mutableStateOf<SchoolMeta?>(null) }
@@ -97,6 +113,17 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    // Child mode state
+    var children by remember { mutableStateOf<List<ChildProfile>>(emptyList()) }
+    var selectedChild by remember { mutableStateOf<ChildProfile?>(null) }
+    var childMenuExpanded by remember { mutableStateOf(false) }
+    var childTimetable by remember { mutableStateOf<TimetableWeek?>(null) }
+
+    // Login form state
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var authError by remember { mutableStateOf<String?>(null) }
+
     fun resetDayFilter() { selectedDayIndex = null }
 
     fun loadSchool() {
@@ -107,27 +134,21 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 val meta = NetworkProvider.repository.loadSchoolMeta(schoolKey)
                 schoolMeta = meta
                 selectedClass = meta.classes.firstOrNull()
-                // Determine current week from school page (fallback to 0)
                 val targetWeek = meta.currentWeekId ?: 0
                 if (weekId != targetWeek) weekId = targetWeek
-                // Clear caches on school change
                 teacherAggregateCache.clear()
                 allWeeksCache = emptyList()
                 allWeeksCacheWeekId = null
-                // Load class timetable for determined week
                 selectedClass?.let { cls ->
                     val tw = NetworkProvider.repository.loadTimetableWeek(meta.schoolId, cls.id, weekId)
                     timetable = tw
                 }
-                // Preload all class timetables for the determined week and collect teachers
                 val allWeeks = NetworkProvider.repository.loadAllTimetablesForWeek(meta.schoolId, meta.classes, weekId)
                 allWeeksCache = allWeeks
                 allWeeksCacheWeekId = weekId
                 teachers = NetworkProvider.repository.collectTeachersFromTimetables(allWeeks)
-                // Reset teacher selections when reloading another school
                 if (selectedTeacher !in teachers) selectedTeacher = teachers.firstOrNull()
                 teacherWeek = selectedTeacher?.let { sel ->
-                    // cache aggregated
                     val built = NetworkProvider.repository.buildTeacherTimetable(allWeeksCache, sel)
                     if (built != null) teacherAggregateCache[weekId to sel] = built
                     built
@@ -142,7 +163,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
     }
 
     fun loadTimetable() {
-        if (teacherMode) return // in teacher mode we don't load single-class timetable
+        if (teacherMode) return
         val meta = schoolMeta ?: return
         val cls = selectedClass ?: return
         loading = true
@@ -189,7 +210,6 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                     allWeeksCacheWeekId = weekId
                     teachers = NetworkProvider.repository.collectTeachersFromTimetables(allWeeks)
                     if (selectedTeacher !in teachers) selectedTeacher = teachers.firstOrNull()
-                    // Invalidate aggregated cache for this week (rebuilt on demand)
                     val toRemove = teacherAggregateCache.keys.filter { it.first == weekId }
                     toRemove.forEach { teacherAggregateCache.remove(it) }
                 }
@@ -202,7 +222,32 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    // Debounced week change to avoid spamming network/aggregation when jumping
+    fun loadChildTimetable() {
+        val s = session ?: return
+        val child = selectedChild ?: return
+        val sid = s.schoolId ?: return
+        loading = true
+        error = null
+        scope.launch {
+            try {
+                val tw = NetworkProvider.repository.loadChildTimetableWeek(
+                    accessToken = s.accessToken,
+                    schoolId = sid,
+                    studentId = child.studentId,
+                    weekId = weekId,
+                    classId = child.classId ?: 0
+                )
+                childTimetable = tw
+                resetDayFilter()
+            } catch (t: Throwable) {
+                error = t.message
+            } finally {
+                loading = false
+            }
+        }
+    }
+
+    // Debounced week change
     fun scheduleWeekChange(newWeek: Int, debounceMs: Long = 200L) {
         val clamped = newWeek.coerceIn(0, 52)
         weekChangeJob?.cancel()
@@ -210,215 +255,414 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
             delay(debounceMs)
             if (weekId == clamped) return@launch
             weekId = clamped
-            if (teacherMode) {
-                loadTeacherAggregateForCurrentWeek()
-            } else {
-                loadTimetable()
+            when (selectedTab) {
+                AppTab.Public -> if (teacherMode) loadTeacherAggregateForCurrentWeek() else loadTimetable()
+                AppTab.Child -> loadChildTimetable()
+                else -> {}
+            }
+        }
+    }
+
+    fun loadChildren() {
+        val s = session ?: return
+        loading = true
+        error = null
+        scope.launch {
+            try {
+                val list = authRepo.getChildrenProfiles()
+                children = list
+                if (selectedChild !in list) selectedChild = list.firstOrNull()
+                if (selectedChild != null) {
+                    loadChildTimetable()
+                }
+            } catch (t: Throwable) {
+                error = t.message
+            } finally {
+                loading = false
             }
         }
     }
 
     LaunchedEffect(Unit) {
-        // Auto-load on first composition
+        // Try to restore session (and refresh quietly)
+        scope.launch { authRepo.refreshIfNeeded() }
+        session = authRepo.currentSession()
+        // Auto-load public page
         loadSchool()
     }
 
     Column(modifier = modifier.padding(16.dp)) {
-        Text(text = schoolMeta?.schoolName ?: "eAsistent Timetables", fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        // Row 2: Class dropdown + Week controls (disabled in teacher mode)
-        val classes = schoolMeta?.classes.orEmpty()
-        val weekLabel = "Week $weekId"
-        // Row A: Class selector only (disabled in Teacher mode)
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(onClick = { classMenuExpanded = true }, enabled = !teacherMode && classes.isNotEmpty()) {
-                Text(selectedClass?.label ?: "Select class")
+        // Tabs
+        androidx.compose.material3.TabRow(selectedTabIndex = selectedTab.ordinal) {
+            listOf(AppTab.Login, AppTab.Public, AppTab.Child, AppTab.Grades).forEachIndexed { index, tab ->
+                val label = when (tab) {
+                    AppTab.Login -> if (session != null) "Account" else "Login"
+                    AppTab.Public -> "Public"
+                    AppTab.Child -> "Child"
+                    AppTab.Grades -> "Grades"
+                }
+                androidx.compose.material3.Tab(
+                    selected = selectedTab.ordinal == index,
+                    onClick = { selectedTab = tab },
+                    text = { Text(label) }
+                )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = teacherMode, onCheckedChange = { enabled ->
-                    teacherMode = enabled
-                    if (enabled) {
-                        // Entering Teacher mode: ensure we have aggregated data for the current weekId
-                        loading = true
-                        error = null
-                        scope.launch {
-                            try {
-                                val meta = schoolMeta
-                                if (meta != null) {
-                                    if (allWeeksCacheWeekId != weekId) {
-                                        val allWeeks = NetworkProvider.repository.loadAllTimetablesForWeek(meta.schoolId, meta.classes, weekId)
-                                        allWeeksCache = allWeeks
-                                        allWeeksCacheWeekId = weekId
-                                        teachers = NetworkProvider.repository.collectTeachersFromTimetables(allWeeks)
-                                        if (selectedTeacher !in teachers) selectedTeacher = teachers.firstOrNull()
+        }
+        Spacer(Modifier.height(12.dp))
+
+        when (selectedTab) {
+            AppTab.Login -> {
+                Text(text = schoolMeta?.schoolName ?: "eAsistent", fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(12.dp))
+                if (session == null) {
+                    androidx.compose.material3.OutlinedTextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Username") }
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    androidx.compose.material3.OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Password") },
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        androidx.compose.material3.Button(onClick = {
+                            authError = null
+                            scope.launch {
+                                try {
+                                    val s = authRepo.login(username.trim(), password)
+                                    session = s
+                                } catch (t: Throwable) {
+                                    authError = t.message
+                                }
+                            }
+                        }) { Text("Login") }
+                    }
+                    authError?.let { Text("Error: $it") }
+                } else {
+                    Text("Logged in as: ${session?.userName ?: session?.userId}")
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        androidx.compose.material3.Button(onClick = {
+                            scope.launch {
+                                authRepo.logout()
+                                session = null
+                            }
+                        }) { Text("Logout") }
+                        androidx.compose.material3.OutlinedButton(onClick = {
+                            scope.launch { authRepo.refreshIfNeeded() ; session = authRepo.currentSession() }
+                        }) { Text("Refresh token") }
+                    }
+                }
+            }
+            AppTab.Public -> {
+                Text(text = schoolMeta?.schoolName ?: "eAsistent Timetables", fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                val classes = schoolMeta?.classes.orEmpty()
+                val weekLabel = "Teden $weekId"
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = { classMenuExpanded = true }, enabled = !teacherMode && classes.isNotEmpty()) {
+                        Text(selectedClass?.label ?: "Select class")
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = teacherMode, onCheckedChange = { enabled ->
+                            teacherMode = enabled
+                            if (enabled) {
+                                loading = true
+                                error = null
+                                scope.launch {
+                                    try {
+                                        val meta = schoolMeta
+                                        if (meta != null) {
+                                            if (allWeeksCacheWeekId != weekId) {
+                                                val allWeeks = NetworkProvider.repository.loadAllTimetablesForWeek(meta.schoolId, meta.classes, weekId)
+                                                allWeeksCache = allWeeks
+                                                allWeeksCacheWeekId = weekId
+                                                teachers = NetworkProvider.repository.collectTeachersFromTimetables(allWeeks)
+                                                if (selectedTeacher !in teachers) selectedTeacher = teachers.firstOrNull()
+                                            }
+                                            recomputeTeacherWeek()
+                                        }
+                                    } catch (t: Throwable) {
+                                        error = t.message
+                                    } finally {
+                                        loading = false
                                     }
+                                }
+                            } else {
+                                loadTimetable()
+                            }
+                        })
+                        Text("Teacher mode")
+                    }
+                    OutlinedButton(onClick = { teacherMenuExpanded = true }, enabled = teacherMode && teachers.isNotEmpty()) {
+                        Text(selectedTeacher ?: "Select teacher")
+                    }
+                    DropdownMenu(expanded = teacherMenuExpanded, onDismissRequest = { teacherMenuExpanded = false }) {
+                        teachers.forEach { t ->
+                            DropdownMenuItem(text = { Text(t) }, onClick = {
+                                teacherMenuExpanded = false
+                                if (selectedTeacher != t) {
+                                    selectedTeacher = t
                                     recomputeTeacherWeek()
                                 }
-                            } catch (t: Throwable) {
-                                error = t.message
-                            } finally {
-                                loading = false
+                            })
+                        }
+                    }
+                }
+                DropdownMenu(expanded = classMenuExpanded, onDismissRequest = { classMenuExpanded = false }) {
+                    classes.forEach { cls ->
+                        DropdownMenuItem(text = { Text(cls.label) }, onClick = {
+                            classMenuExpanded = false
+                            if (selectedClass?.id != cls.id) {
+                                selectedClass = cls
+                                loadTimetable()
+                            }
+                        })
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = { if (weekId > 0) scheduleWeekChange(weekId - 1) }) { Text("Week -") }
+                    val displayWeek = if (teacherMode) teacherWeek else timetable
+                    val week = displayWeek
+                    val df = DateTimeFormatter.ofPattern("d. M. yyyy")
+                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            weekLabel,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
+
+                        if (week != null) {
+                            Text(
+                                "${week.weekStart.format(df)} - ${week.weekEnd.format(df)}",
+                                fontSize = 14.sp,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                    OutlinedButton(onClick = { if (weekId < 52) scheduleWeekChange(weekId + 1) }) { Text("Week +") }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                if (loading) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) { CircularProgressIndicator() }
+                }
+                error?.let { err -> Text(text = "Error: $err") }
+
+                val displayWeek = if (teacherMode) teacherWeek else timetable
+                if (displayWeek != null) {
+                    val week = displayWeek
+                    Spacer(Modifier.height(6.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        item {
+                            if (selectedDayIndex == null) {
+                                Button(onClick = { selectedDayIndex = null }) { Text("All") }
+                            } else {
+                                OutlinedButton(onClick = { selectedDayIndex = null }) { Text("All") }
                             }
                         }
-                    } else {
-                        // Back to class mode: ensure a class timetable is loaded
-                        loadTimetable()
-                    }
-                })
-                Text("Teacher mode")
-            }
-            OutlinedButton(onClick = { teacherMenuExpanded = true }, enabled = teacherMode && teachers.isNotEmpty()) {
-                Text(selectedTeacher ?: "Select teacher")
-            }
-            DropdownMenu(expanded = teacherMenuExpanded, onDismissRequest = { teacherMenuExpanded = false }) {
-                teachers.forEach { t ->
-                    DropdownMenuItem(text = { Text(t) }, onClick = {
-                        teacherMenuExpanded = false
-                        if (selectedTeacher != t) {
-                            selectedTeacher = t
-                            recomputeTeacherWeek()
+                        items(week.days.size) { idx ->
+                            val day = week.days[idx]
+                            val label = day.date.dayOfWeek.name.first().toString() + day.date.dayOfWeek.name.drop(1).lowercase()
+                            val isSelected = selectedDayIndex == idx
+                            if (isSelected) {
+                                Button(onClick = { selectedDayIndex = idx }) { Text(label) }
+                            } else {
+                                OutlinedButton(onClick = { selectedDayIndex = idx }) { Text(label) }
+                            }
                         }
-                    })
-                }
-            }
-        }
-        // Dropdown menu as sibling so it can overflow properly
-        DropdownMenu(expanded = classMenuExpanded, onDismissRequest = { classMenuExpanded = false }) {
-            classes.forEach { cls ->
-                DropdownMenuItem(text = { Text(cls.label) }, onClick = {
-                    classMenuExpanded = false
-                    if (selectedClass?.id != cls.id) {
-                        selectedClass = cls
-                        loadTimetable()
                     }
-                })
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-        // Row B: Week controls — ensure buttons remain visible with weighted, ellipsized label
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(onClick = {
-                if (weekId > 0) {
-                    scheduleWeekChange(weekId - 1)
-                }
-            }) { Text("Week -") }
-            val displayWeek = if (teacherMode) teacherWeek else timetable
-            val week = displayWeek
-            val df = DateTimeFormatter.ofPattern("d. M. yyyy")
-            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    weekLabel,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-
-                if (week != null) {
-                    Text(
-                        "${week.weekStart.format(df)} - ${week.weekEnd.format(df)}",
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-
-            OutlinedButton(onClick = {
-                if (weekId < 52) {
-                    scheduleWeekChange(weekId + 1)
-                }
-            }) { Text("Week +") }
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        if (loading) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                CircularProgressIndicator()
-            }
-        }
-        error?.let { err ->
-            Text(text = "Error: $err")
-        }
-
-        val displayWeek = if (teacherMode) teacherWeek else timetable
-        if (displayWeek != null) {
-            val week = displayWeek
-            // Day selector: All + per-day buttons (horizontally scrollable)
-            Spacer(Modifier.height(6.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                item {
-                    if (selectedDayIndex == null) {
-                        Button(onClick = { selectedDayIndex = null }) { Text("All") }
-                    } else {
-                        OutlinedButton(onClick = { selectedDayIndex = null }) { Text("All") }
-                    }
-                }
-                items(week.days.size) { idx ->
-                    val day = week.days[idx]
-                    val label = day.date.dayOfWeek.name.first().toString() + day.date.dayOfWeek.name.drop(1).lowercase()
-                    val isSelected = selectedDayIndex == idx
-                    if (isSelected) {
-                        Button(onClick = { selectedDayIndex = idx }) { Text(label) }
-                    } else {
-                        OutlinedButton(onClick = { selectedDayIndex = idx }) { Text(label) }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(4.dp))
-
-            val daysToShow = if (selectedDayIndex == null) week.days else listOfNotNull(week.days.getOrNull(selectedDayIndex!!))
-
-            LazyColumn {
-                itemsIndexed(daysToShow) { _, day ->
-                    Text(text = day.date.toString(), fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.height(4.dp))
-                    day.lessonsByPeriod.forEach { cell ->
-                        when (cell) {
-                            is PeriodCell.Empty -> { /* skip */ }
-                            is PeriodCell.WithLessons -> {
-                                androidx.compose.material3.Card(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)) {
-                                    Column(modifier = Modifier.padding(12.dp)) {
-                                        val time = "${cell.timeRange.start} - ${cell.timeRange.endInclusive}"
-                                        Text(text = "${cell.periodNumber}. ura  •  $time", fontWeight = FontWeight.SemiBold)
-                                        Spacer(Modifier.height(4.dp))
-                                        cell.lessons.forEachIndexed { idx, les ->
-                                            Column(modifier = Modifier.fillMaxWidth()) {
-                                                val title = les.subjectCode ?: les.subjectTitle ?: "?"
-                                                val subtitleParts = buildList {
-                                                    les.teacher?.let { add(it) }
-                                                    les.room?.let { add(it) }
-                                                    les.sourceClassLabel?.let { add(it) }
-                                                    les.groupLabel?.let { add(it) }
-                                                }
-                                                Row(modifier = Modifier.fillMaxWidth()) {
-                                                    Text(title, fontWeight = FontWeight.Medium)
-                                                    Spacer(Modifier.width(8.dp))
-                                                    if (les.isCancelled) {
-                                                        Text("ODP", color = androidx.compose.ui.graphics.Color.Red)
+                    val daysToShow = if (selectedDayIndex == null) week.days else listOfNotNull(week.days.getOrNull(selectedDayIndex!!))
+                    LazyColumn {
+                        itemsIndexed(daysToShow) { _, day ->
+                            Text(text = day.date.toString(), fontWeight = FontWeight.SemiBold)
+                            Spacer(Modifier.height(4.dp))
+                            day.lessonsByPeriod.forEach { cell ->
+                                when (cell) {
+                                    is PeriodCell.Empty -> {}
+                                    is PeriodCell.WithLessons -> {
+                                        androidx.compose.material3.Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                                            Column(modifier = Modifier.padding(12.dp)) {
+                                                val time = "${cell.timeRange.start} - ${cell.timeRange.endInclusive}"
+                                                Text(text = "${cell.periodNumber}. ura  •  $time", fontWeight = FontWeight.SemiBold)
+                                                Spacer(Modifier.height(4.dp))
+                                                cell.lessons.forEachIndexed { idx, les ->
+                                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                                        val title = les.subjectCode ?: les.subjectTitle ?: "?"
+                                                        val subtitleParts = buildList {
+                                                            les.teacher?.let { add(it) }
+                                                            les.room?.let { add(it) }
+                                                            les.sourceClassLabel?.let { add(it) }
+                                                            les.groupLabel?.let { add(it) }
+                                                        }
+                                                        Row(modifier = Modifier.fillMaxWidth()) {
+                                                            Text(title, fontWeight = FontWeight.Medium)
+                                                            Spacer(Modifier.width(8.dp))
+                                                            if (les.isCancelled) {
+                                                                Text("ODP", color = androidx.compose.ui.graphics.Color.Red)
+                                                            }
+                                                        }
+                                                        if (subtitleParts.isNotEmpty()) { Text(subtitleParts.joinToString(" • ")) }
+                                                        if (idx < cell.lessons.lastIndex) Spacer(Modifier.height(6.dp))
                                                     }
                                                 }
-                                                if (subtitleParts.isNotEmpty()) {
-                                                    Text(subtitleParts.joinToString(" • "))
-                                                }
-                                                if (idx < cell.lessons.lastIndex) Spacer(Modifier.height(6.dp))
                                             }
                                         }
                                     }
                                 }
                             }
+                            Spacer(Modifier.height(12.dp))
                         }
                     }
-                    Spacer(Modifier.height(12.dp))
+                } else {
+                    if (teacherMode) { Text("Select a teacher to view their timetable for the current week") }
                 }
             }
-        } else {
-            if (teacherMode) {
-                Text("Select a teacher to view their timetable for the current week")
+            AppTab.Child -> {
+                val weekLabel = "Teden $weekId"
+                Text(text = schoolMeta?.schoolName ?: "eAsistent — Child", fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                if (session == null) {
+                    Text("Please login to view the child timetable.")
+                } else {
+                    // Auto-load children when opening the tab
+                    LaunchedEffect(selectedTab, session) {
+                        if (selectedTab == AppTab.Child && children.isEmpty()) {
+                            loadChildren()
+                        }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(onClick = { childMenuExpanded = true }, enabled = children.isNotEmpty()) {
+                            Text(selectedChild?.displayName ?: "Select child")
+                        }
+                        DropdownMenu(expanded = childMenuExpanded, onDismissRequest = { childMenuExpanded = false }) {
+                            children.forEach { ch ->
+                                DropdownMenuItem(text = { Text(ch.displayName ?: ch.uuid) }, onClick = {
+                                    childMenuExpanded = false
+                                    if (selectedChild?.uuid != ch.uuid) {
+                                        selectedChild = ch
+                                        loadChildTimetable()
+                                    }
+                                })
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(onClick = { if (weekId > 0) scheduleWeekChange(weekId - 1) }) { Text("Week -") }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+
+                            val displayWeek = if (teacherMode) teacherWeek else timetable
+                            val week = displayWeek
+                            val df = DateTimeFormatter.ofPattern("d. M. yyyy")
+                            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    weekLabel,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.Center
+                                )
+
+                                if (week != null) {
+                                    Text(
+                                        "${week.weekStart.format(df)} - ${week.weekEnd.format(df)}",
+                                        fontSize = 14.sp,
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                            OutlinedButton(onClick = { if (weekId < 52) scheduleWeekChange(weekId + 1) }) { Text("Week +") }
+                        }
+
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    if (loading) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) { CircularProgressIndicator() }
+                    }
+                    error?.let { err -> Text(text = "Error: $err") }
+                    val week = childTimetable
+                    if (week != null) {
+                        Spacer(Modifier.height(6.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            item {
+                                if (selectedDayIndex == null) {
+                                    Button(onClick = { selectedDayIndex = null }) { Text("All") }
+                                } else {
+                                    OutlinedButton(onClick = { selectedDayIndex = null }) { Text("All") }
+                                }
+                            }
+                            items(week.days.size) { idx ->
+                                val day = week.days[idx]
+                                val label = day.date.dayOfWeek.name.first().toString() + day.date.dayOfWeek.name.drop(1).lowercase()
+                                val isSelected = selectedDayIndex == idx
+                                if (isSelected) {
+                                    Button(onClick = { selectedDayIndex = idx }) { Text(label) }
+                                } else {
+                                    OutlinedButton(onClick = { selectedDayIndex = idx }) { Text(label) }
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        val daysToShow = if (selectedDayIndex == null) week.days else listOfNotNull(week.days.getOrNull(selectedDayIndex!!))
+                        LazyColumn {
+                            itemsIndexed(daysToShow) { _, day ->
+                                Text(text = day.date.toString(), fontWeight = FontWeight.SemiBold)
+                                Spacer(Modifier.height(4.dp))
+                                day.lessonsByPeriod.forEach { cell ->
+                                    when (cell) {
+                                        is PeriodCell.Empty -> {}
+                                        is PeriodCell.WithLessons -> {
+                                            androidx.compose.material3.Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                                                Column(modifier = Modifier.padding(12.dp)) {
+                                                    val time = "${cell.timeRange.start} - ${cell.timeRange.endInclusive}"
+                                                    Text(text = "${cell.periodNumber}. ura  •  $time", fontWeight = FontWeight.SemiBold)
+                                                    Spacer(Modifier.height(4.dp))
+                                                    cell.lessons.forEachIndexed { idx, les ->
+                                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                                            val title = les.subjectCode ?: les.subjectTitle ?: "?"
+                                                            val subtitleParts = buildList {
+                                                                les.teacher?.let { add(it) }
+                                                                les.room?.let { add(it) }
+                                                                les.groupLabel?.let { add(it) }
+                                                            }
+                                                            Row(modifier = Modifier.fillMaxWidth()) {
+                                                                Text(title, fontWeight = FontWeight.Medium)
+                                                                Spacer(Modifier.width(8.dp))
+                                                                if (les.isCancelled) {
+                                                                    Text("ODP", color = androidx.compose.ui.graphics.Color.Red)
+                                                                }
+                                                            }
+                                                            if (subtitleParts.isNotEmpty()) { Text(subtitleParts.joinToString(" • ")) }
+                                                            if (idx < cell.lessons.lastIndex) Spacer(Modifier.height(6.dp))
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                Spacer(Modifier.height(12.dp))
+                            }
+                        }
+                    }
+                }
+            }
+            AppTab.Grades -> {
+                Text("Grades — coming soon")
             }
         }
     }
