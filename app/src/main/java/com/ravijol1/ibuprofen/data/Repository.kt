@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap
 class TimetableRepository(private val api: EAsistentApi) {
     // In-memory cache: (schoolId, classId, weekId) -> TimetableWeek
     private val weekCache = ConcurrentHashMap<Triple<Int, Int, Int>, TimetableWeek>()
+    // In-memory cache for child: (schoolId, studentId, weekId) -> TimetableWeek
+    private val childWeekCache = ConcurrentHashMap<Triple<Int, Int, Int>, TimetableWeek>()
 
     suspend fun loadSchoolMeta(schoolKey: String): SchoolMeta {
         val res = api.getSchoolPage(schoolKey)
@@ -26,6 +28,34 @@ class TimetableRepository(private val api: EAsistentApi) {
         val body = res.body() ?: error("Empty timetable body")
         val parsed = TimetableParser.parse(classId, body)
         weekCache[key] = parsed
+        return parsed
+    }
+
+    // Authenticated student timetable using studentId (and optional classId)
+    suspend fun loadChildTimetableWeek(
+        accessToken: String,
+        schoolId: Int,
+        studentId: Int,
+        weekId: Int,
+        classId: Int = 0
+    ): TimetableWeek {
+        require(weekId in 0..52) { "weekId out of range" }
+        val key = Triple(schoolId, studentId, weekId)
+        childWeekCache[key]?.let { return it }
+        val authHeader = "Bearer $accessToken"
+        val res = api.getTimetableAuth(
+            authHeader = authHeader,
+            schoolId = schoolId,
+            classId = classId,
+            professorId = 0,
+            studentId = studentId,
+            classroomId = 0,
+            weekId = weekId,
+            extracurriculars = 0
+        )
+        val body = res.body() ?: error("Empty timetable body")
+        val parsed = TimetableParser.parse(classId.takeIf { it != 0 } ?: -1, body)
+        childWeekCache[key] = parsed
         return parsed
     }
 
