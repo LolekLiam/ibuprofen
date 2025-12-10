@@ -106,8 +106,27 @@ class AuthRepository(
                 classId = classId,
                 displayName = item.displayName,
                 className = item.className,
-                schoolName = item.schoolName
+                schoolName = item.schoolName,
+                subscriptionStatus = item.subscriptionStatus
             )
         }
+    }
+
+    // Paid grades fetch; returns empty list on error. Attempts one refresh on 401.
+    suspend fun getGrades(childUuid: String): List<SubjectGrades> = withContext(Dispatchers.IO) {
+        val token = store.accessToken ?: return@withContext emptyList()
+        suspend fun call(bearer: String): retrofit2.Response<GradesResponse> {
+            return api.getGrades(authHeader = bearer, childUuid = childUuid)
+        }
+        var bearer = "Bearer $token"
+        var res = call(bearer)
+        if (res.code() == 401) {
+            if (refreshIfNeeded()) {
+                bearer = "Bearer ${store.accessToken}"
+                res = call(bearer)
+            }
+        }
+        if (!res.isSuccessful) return@withContext emptyList()
+        res.body()?.items ?: emptyList()
     }
 }
