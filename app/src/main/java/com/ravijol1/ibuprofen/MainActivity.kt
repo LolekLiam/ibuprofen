@@ -113,6 +113,9 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    // Track if we already auto-selected the day for the current dataset (tab/mode+week+entity)
+    var autoDayAppliedKey by remember { mutableStateOf<String?>(null) }
+
     // Child mode state
     var children by remember { mutableStateOf<List<ChildProfile>>(emptyList()) }
     var selectedChild by remember { mutableStateOf<ChildProfile?>(null) }
@@ -124,7 +127,24 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
     var password by remember { mutableStateOf("") }
     var authError by remember { mutableStateOf<String?>(null) }
 
+    fun computeDefaultDayIndex(week: TimetableWeek?): Int? {
+        if (week == null) return null
+        val today = java.time.LocalDate.now()
+        val dow = today.dayOfWeek
+        val isWeekend = dow == java.time.DayOfWeek.SATURDAY || dow == java.time.DayOfWeek.SUNDAY
+        if (isWeekend) return null // default to All on weekends
+        val idx = week.days.indexOfFirst { it.date == today }
+        return if (idx >= 0) idx else null
+    }
     fun resetDayFilter() { selectedDayIndex = null }
+
+    fun applyAutoDayFor(week: TimetableWeek?, datasetKey: String) {
+        val currentKey = "$datasetKey|w=$weekId"
+        if (autoDayAppliedKey == currentKey) return
+        val idx = computeDefaultDayIndex(week)
+        selectedDayIndex = idx
+        autoDayAppliedKey = currentKey
+    }
 
     fun loadSchool() {
         loading = true
@@ -142,6 +162,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 selectedClass?.let { cls ->
                     val tw = NetworkProvider.repository.loadTimetableWeek(meta.schoolId, cls.id, weekId)
                     timetable = tw
+                    applyAutoDayFor(tw, datasetKey = "public:${cls.id}")
                 }
                 val allWeeks = NetworkProvider.repository.loadAllTimetablesForWeek(meta.schoolId, meta.classes, weekId)
                 allWeeksCache = allWeeks
@@ -150,10 +171,12 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 if (selectedTeacher !in teachers) selectedTeacher = teachers.firstOrNull()
                 teacherWeek = selectedTeacher?.let { sel ->
                     val built = NetworkProvider.repository.buildTeacherTimetable(allWeeksCache, sel)
-                    if (built != null) teacherAggregateCache[weekId to sel] = built
+                    if (built != null) {
+                        teacherAggregateCache[weekId to sel] = built
+                        applyAutoDayFor(built, datasetKey = "teacher:$sel")
+                    }
                     built
                 }
-                resetDayFilter()
             } catch (t: Throwable) {
                 error = t.message
             } finally {
@@ -172,7 +195,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
             try {
                 val tw = NetworkProvider.repository.loadTimetableWeek(meta.schoolId, cls.id, weekId)
                 timetable = tw
-                resetDayFilter()
+                applyAutoDayFor(tw, datasetKey = "public:${cls.id}")
             } catch (t: Throwable) {
                 error = t.message
             } finally {
@@ -195,7 +218,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
             }
             teacherWeek = built
         }
-        resetDayFilter()
+        applyAutoDayFor(teacherWeek, datasetKey = "teacher:$sel")
     }
 
     fun loadTeacherAggregateForCurrentWeek() {
@@ -238,7 +261,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                     classId = child.classId ?: 0
                 )
                 childTimetable = tw
-                resetDayFilter()
+                applyAutoDayFor(tw, datasetKey = "child:${child.studentId}")
             } catch (t: Throwable) {
                 error = t.message
             } finally {
@@ -662,7 +685,129 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 }
             }
             AppTab.Grades -> {
-                Text("Grades — coming soon")
+                // Paid + Free (placeholder) grades view
+                Text(text = schoolMeta?.schoolName ?: "eAsistent — Grades", fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+
+                // Reuse login/session and children from the Child tab
+                if (session == null) {
+                    Text("Please login to view grades.")
+                } else {
+                    // Load children on first entry
+                    LaunchedEffect(selectedTab, session) {
+                        if (selectedTab == AppTab.Grades && children.isEmpty()) {
+                            loadChildren()
+                        }
+                    }
+
+                    // Child selector (if multiple)
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(onClick = { childMenuExpanded = true }, enabled = children.isNotEmpty()) {
+                            Text(selectedChild?.displayName ?: "Select child")
+                        }
+                        DropdownMenu(expanded = childMenuExpanded, onDismissRequest = { childMenuExpanded = false }) {
+                            children.forEach { ch ->
+                                DropdownMenuItem(text = { Text(ch.displayName ?: ch.uuid) }, onClick = {
+                                    childMenuExpanded = false
+                                    if (selectedChild?.uuid != ch.uuid) {
+                                        selectedChild = ch
+                                        // invalidate auto day selection for grades view
+                                        autoDayAppliedKey = null
+                                    }
+                                })
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Determine Plus status
+                    val hasPlus = selectedChild?.subscriptionStatus?.equals("plus", ignoreCase = true) == true
+
+                    if (!hasPlus) {
+                        Text("Grades (free): not implemented yet. Your account does not have Plus subscription.")
+                    } else {
+                        // Paid grades: load and show
+                        var grades by remember { mutableStateOf<List<com.ravijol1.ibuprofen.data.SubjectGrades>>(emptyList()) }
+                        var gradesLoaded by remember { mutableStateOf(false) }
+
+                        LaunchedEffect(selectedChild, session) {
+                            if (selectedTab == AppTab.Grades && selectedChild != null) {
+                                loading = true
+                                error = null
+                                try {
+                                    val childUuid = selectedChild?.uuid
+                                    if (childUuid.isNullOrBlank()) throw IllegalStateException("Missing child UUID for grades")
+                                    val list = authRepo.getGrades(childUuid)
+                                    grades = list
+                                    gradesLoaded = true
+                                } catch (t: Throwable) {
+                                    error = t.message
+                                } finally {
+                                    loading = false
+                                }
+                            }
+                        }
+
+                        if (loading && !gradesLoaded) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) { CircularProgressIndicator() }
+                        }
+                        error?.let { err -> Text(text = "Error: $err") }
+
+                        if (grades.isNotEmpty()) {
+                            // Simple grades table
+                            LazyColumn {
+                                itemsIndexed(grades) { _, subj ->
+                                    androidx.compose.material3.Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                        Column(modifier = Modifier.padding(12.dp)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(subj.name, fontWeight = FontWeight.SemiBold)
+                                                Spacer(Modifier.width(8.dp))
+                                                subj.averageGrade?.let { Text("Avg: $it", fontSize = 14.sp) }
+                                            }
+                                            Spacer(Modifier.height(6.dp))
+                                            subj.semesters.forEach { sem ->
+                                                Column(modifier = Modifier.fillMaxWidth()) {
+                                                    Text("Semester ${sem.id}", fontWeight = FontWeight.Medium)
+                                                    if (sem.finalGrade != null) {
+                                                        Text("Final: ${sem.finalGrade}", fontSize = 13.sp)
+                                                    }
+                                                    if (sem.grades.isEmpty()) {
+                                                        Text("No grades", fontSize = 13.sp)
+                                                    } else {
+                                                        sem.grades.forEach { g ->
+                                                            val color = try { androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(g.color ?: "#000000")) } catch (_: Throwable) { androidx.compose.ui.graphics.Color.Unspecified }
+                                                            val overridden = (g.overridesIds?.isNotEmpty() == true)
+                                                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                                    Text(g.value ?: "?", color = color, fontWeight = FontWeight.SemiBold)
+                                                                    Spacer(Modifier.width(8.dp))
+                                                                    Text(g.typeName ?: "", fontSize = 13.sp)
+                                                                    Spacer(Modifier.width(8.dp))
+                                                                    Text(g.date ?: "", fontSize = 12.sp)
+                                                                }
+                                                                val comment = g.comment
+                                                                if (!comment.isNullOrBlank()) {
+                                                                    Text(comment, fontSize = 12.sp)
+                                                                }
+                                                                if (overridden) {
+                                                                    //Text("Overrides: ${g.overridesIds?.joinToString()}", fontSize = 11.sp)
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                Spacer(Modifier.height(6.dp))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (gradesLoaded && grades.isEmpty()) {
+                            Text("No grades available.")
+                        }
+                    }
+                }
             }
         }
     }
