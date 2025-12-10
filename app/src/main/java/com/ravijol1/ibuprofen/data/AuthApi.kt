@@ -25,4 +25,11 @@ interface AuthApi {
     suspend fun getChildren(
         @Header("Authorization") authHeader: String
     ): Response<ChildrenResponse>
+
+    // Paid grades endpoint
+    @GET("m/grades")
+    suspend fun getGrades(
+        @Header("Authorization") authHeader: String,
+        @Header("X-Child-Id") childUuid: String
+    ): Response<GradesResponse>
 }
