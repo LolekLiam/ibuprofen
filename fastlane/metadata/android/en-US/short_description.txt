@@ -1,0 +1,1 @@
+A fast, open-source eAsistent timetable and grades viewer with teacher filtering and no paywalls.

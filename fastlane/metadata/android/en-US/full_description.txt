@@ -1,0 +1,12 @@
+Ibuprofen is a modern, open-source alternative to the official eAsistent app, focused on speed, reliability, and giving students access to the information they actually need without paywalls.
+
+• View school timetables instantly, even when the official app is down
+• Filter schedules by teacher or class (a feature missing in the official app)
+• Securely log in with your eAsistent account
+• Access your own personalized timetable
+• Uses only publicly accessible endpoints
+• No tracking, no analytics, no data collection
+• Fully open source and privacy-respecting
+
+Ibuprofen is built by students, for students, with a smooth UI, fast performance, and no restrictions.
+More features are coming soon, including free grade lookup and upcoming test visibility.
