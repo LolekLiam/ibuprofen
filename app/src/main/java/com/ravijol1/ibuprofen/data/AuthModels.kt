@@ -59,7 +59,8 @@ data class ChildItem(
     @SerializedName("school_name") val schoolName: String?,
     val gender: String?,
     val age: Int?,
-    @SerializedName("short_name") val shortName: String?
+    @SerializedName("short_name") val shortName: String?,
+    @SerializedName("subscription_status") val subscriptionStatus: String?
 )
 
 // Parsed JWT payload subset (no verification; informational)
@@ -84,5 +85,42 @@ data class ChildProfile(
     val classId: Int?,
     val displayName: String?,
     val className: String?,
-    val schoolName: String?
+    val schoolName: String?,
+    val subscriptionStatus: String?
+)
+
+// --- Grades (paid) ---
+
+data class GradesResponse(
+    val items: List<SubjectGrades>
+)
+
+data class SubjectGrades(
+    val name: String,
+    @SerializedName("short_name") val shortName: String?,
+    val id: Long,
+    @SerializedName("grade_type") val gradeType: String?,
+    @SerializedName("is_excused") val isExcused: Boolean?,
+    @SerializedName("final_grade") val finalGrade: String?,
+    @SerializedName("average_grade") val averageGrade: String?,
+    @SerializedName("grade_rank") val gradeRank: String?,
+    val semesters: List<SemesterGrades>
+)
+
+data class SemesterGrades(
+    val id: Int,
+    @SerializedName("final_grade") val finalGrade: String?,
+    val grades: List<GradeItem>
+)
+
+data class GradeItem(
+    @SerializedName("type_name") val typeName: String?,
+    val comment: String?,
+    val id: Long,
+    val type: String?,
+    @SerializedName("overrides_ids") val overridesIds: List<Long>?,
+    val value: String?,
+    val color: String?,
+    val date: String?, // yyyy-MM-dd
+    @SerializedName("inserted_at") val insertedAt: String?
 )
