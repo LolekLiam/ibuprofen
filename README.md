@@ -14,7 +14,7 @@ Special thanks to eAsistent dev team za NIČ ker nimate javnega API-ja in ker ga
 - ~fix ux~
 - ~add support for other schools~(some1 test please?)
 - ~add easistent auth~
-- fuck easistent, free redovalnice za vse
+- ~fuck easistent, free redovalnice za vse~
 - switch few endpoints from mobile to web
 - add support for parent login
 - see upcoming tests
