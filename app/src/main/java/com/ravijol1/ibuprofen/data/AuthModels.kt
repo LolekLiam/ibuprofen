@@ -124,3 +124,32 @@ data class GradeItem(
     val date: String?, // yyyy-MM-dd
     @SerializedName("inserted_at") val insertedAt: String?
 )
+
+
+// --- Notifications (free grades source) ---
+
+data class NotificationsResponse(
+    val items: List<NotificationItem>
+)
+
+data class NotificationItem(
+    val title: String?,
+    val message: String?,
+    @SerializedName("meta_data") val metaData: NotificationMeta?,
+    val id: Long,
+    @SerializedName("created_at") val createdAt: String?, // "yyyy-MM-dd HH:mm:ss"
+    val seen: Boolean?,
+    val type: String?
+)
+
+data class NotificationMeta(
+    val channelId: String?,
+    val messageId: Long?,
+    val userId: Long?,
+    val channelType: String?,
+    val gradeId: Long?,
+    val subjectId: Long?,
+    val date: String?,
+    @SerializedName("schedule_id") val scheduleId: Long?,
+    @SerializedName("event_slug") val eventSlug: String?
+)
