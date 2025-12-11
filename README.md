@@ -25,5 +25,9 @@ This project was created by observing publicly visible network traffic in the eA
 No proprietary code, assets, or private API keys were used or reverse-engineered.
 All communication happens entirely through publicly accessible endpoints.
 
-This project is not affiliated with nor endorsed by eAsistent.
+This project is not affiliated with or endorsed by eŠola d.o.o.
+This app merely provides an alternative interface for users to view their own educational data.
+All communication occurs directly between the user and the official eAsistent servers.
+No credentials or personal data are sent to third-party servers.
+Users are responsible for ensuring their use complies with their school's policies.
 All trademarks belong to their respective owners.
