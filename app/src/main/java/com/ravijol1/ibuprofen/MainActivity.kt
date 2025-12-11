@@ -146,6 +146,21 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
         autoDayAppliedKey = currentKey
     }
 
+    // Centralized auto-logout that also clears child/grades state and caches
+    fun performAutoLogout() {
+        scope.launch {
+            try { authRepo.logout() } catch (_: Throwable) {}
+            session = null
+            // Clear child-related state and caches
+            children = emptyList()
+            selectedChild = null
+            childTimetable = null
+            autoDayAppliedKey = null
+            error = null
+            NetworkProvider.repository.clearChildCache()
+        }
+    }
+
     fun loadSchool() {
         loading = true
         error = null
@@ -263,7 +278,44 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 childTimetable = tw
                 applyAutoDayFor(tw, datasetKey = "child:${child.studentId}")
             } catch (t: Throwable) {
-                error = t.message
+                val msg = t.message ?: ""
+                if (msg.contains("Unauthorized", ignoreCase = true)) {
+                    // Try refresh once
+                    val refreshed = try { authRepo.refreshIfNeeded() } catch (_: Throwable) { false }
+                    if (refreshed) {
+                        session = authRepo.currentSession()
+                        val s2 = session
+                        if (s2 != null) {
+                            try {
+                                val tw2 = NetworkProvider.repository.loadChildTimetableWeek(
+                                    accessToken = s2.accessToken,
+                                    schoolId = s2.schoolId ?: sid,
+                                    studentId = child.studentId,
+                                    weekId = weekId,
+                                    classId = child.classId ?: 0
+                                )
+                                childTimetable = tw2
+                                applyAutoDayFor(tw2, datasetKey = "child:${child.studentId}")
+                            } catch (t2: Throwable) {
+                                // Auto logout on persistent unauthorized
+                                if ((t2.message ?: "").contains("Unauthorized", true)) {
+                                    performAutoLogout()
+                                    error = "Session expired. Please log in again."
+                                } else {
+                                    error = t2.message
+                                }
+                            } finally {
+                                loading = false
+                            }
+                            return@launch
+                        }
+                    }
+                    // If refresh failed
+                    performAutoLogout()
+                    error = "Session expired. Please log in again."
+                } else {
+                    error = t.message
+                }
             } finally {
                 loading = false
             }
@@ -299,7 +351,13 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                     loadChildTimetable()
                 }
             } catch (t: Throwable) {
-                error = t.message
+                val msg = t.message ?: ""
+                if (msg.contains("Unauthorized", ignoreCase = true)) {
+                    performAutoLogout()
+                    error = "Session expired. Please log in again."
+                } else {
+                    error = t.message
+                }
             } finally {
                 loading = false
             }
@@ -360,6 +418,14 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                                 try {
                                     val s = authRepo.login(username.trim(), password)
                                     session = s
+                                    // Reset child-related state and caches on new login to avoid stale data
+                                    children = emptyList()
+                                    selectedChild = null
+                                    childTimetable = null
+                                    autoDayAppliedKey = null
+                                    error = null
+                                    // Clear repository child cache
+                                    NetworkProvider.repository.clearChildCache()
                                 } catch (t: Throwable) {
                                     authError = t.message
                                 }
@@ -372,10 +438,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         androidx.compose.material3.Button(onClick = {
-                            scope.launch {
-                                authRepo.logout()
-                                session = null
-                            }
+                            performAutoLogout()
                         }) { Text("Logout") }
                         androidx.compose.material3.OutlinedButton(onClick = {
                             scope.launch { authRepo.refreshIfNeeded() ; session = authRepo.currentSession() }
@@ -725,11 +788,92 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                     val hasPlus = selectedChild?.subscriptionStatus?.equals("plus", ignoreCase = true) == true
 
                     if (!hasPlus) {
-                        Text("Grades (free): not implemented yet. Your account does not have Plus subscription.")
+                        // Free grades via notifications
+                        // Warning banner: notifications may miss retake results (redo after fail)
+                        androidx.compose.material3.Card(modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    "Opozorilo: Brezplačne ocene temeljijo na obvestilih. Ponovni preizkusi (po NPS ali 1) pogosto niso vključeni v obvestila, zato seznam morda ni popoln.",
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+
+                        var freeGrades by remember(selectedChild?.uuid, session) { mutableStateOf<List<com.ravijol1.ibuprofen.data.SubjectGrades>>(emptyList()) }
+                        var freeLoaded by remember(selectedChild?.uuid, session) { mutableStateOf(false) }
+
+                        LaunchedEffect(selectedChild, session) {
+                            if (selectedTab == AppTab.Grades && selectedChild != null) {
+                                loading = true
+                                error = null
+                                try {
+                                    val childUuid = selectedChild?.uuid
+                                    if (childUuid.isNullOrBlank()) throw IllegalStateException("Missing child UUID for grades")
+                                    val list = authRepo.getFreeGrades(childUuid)
+                                    freeGrades = list
+                                    freeLoaded = true
+                                } catch (t: Throwable) {
+                                    val msg = t.message ?: ""
+                                    if (msg.contains("Unauthorized", ignoreCase = true)) {
+                                        performAutoLogout()
+                                        error = "Session expired. Please log in again."
+                                    } else {
+                                        error = t.message
+                                    }
+                                } finally {
+                                    loading = false
+                                }
+                            }
+                        }
+
+                        if (loading && !freeLoaded) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) { CircularProgressIndicator() }
+                        }
+                        error?.let { err -> Text(text = "Error: $err") }
+
+                        if (freeGrades.isNotEmpty()) {
+                            LazyColumn {
+                                itemsIndexed(freeGrades) { _, subj ->
+                                    androidx.compose.material3.Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                        Column(modifier = Modifier.padding(12.dp)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(subj.name, fontWeight = FontWeight.SemiBold)
+                                            }
+                                            Spacer(Modifier.height(6.dp))
+                                            subj.semesters.forEach { sem ->
+                                                Column(modifier = Modifier.fillMaxWidth()) {
+                                                    Text("Semester ${sem.id}", fontWeight = FontWeight.Medium)
+                                                    if (sem.grades.isEmpty()) {
+                                                        Text("No grades", fontSize = 13.sp)
+                                                    } else {
+                                                        sem.grades.forEach { g ->
+                                                            val color = try { androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(g.color ?: "#000000")) } catch (_: Throwable) { androidx.compose.ui.graphics.Color.Unspecified }
+                                                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                                    Text(g.value ?: "?", color = color, fontWeight = FontWeight.SemiBold)
+                                                                    Spacer(Modifier.width(8.dp))
+                                                                    Text(g.typeName ?: "", fontSize = 13.sp)
+                                                                    Spacer(Modifier.width(8.dp))
+                                                                    Text(g.date ?: "", fontSize = 12.sp)
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                Spacer(Modifier.height(6.dp))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (freeLoaded && freeGrades.isEmpty()) {
+                            Text("No grades available.")
+                        }
                     } else {
                         // Paid grades: load and show
-                        var grades by remember { mutableStateOf<List<com.ravijol1.ibuprofen.data.SubjectGrades>>(emptyList()) }
-                        var gradesLoaded by remember { mutableStateOf(false) }
+                        var grades by remember(selectedChild?.uuid, session) { mutableStateOf<List<com.ravijol1.ibuprofen.data.SubjectGrades>>(emptyList()) }
+                        var gradesLoaded by remember(selectedChild?.uuid, session) { mutableStateOf(false) }
 
                         LaunchedEffect(selectedChild, session) {
                             if (selectedTab == AppTab.Grades && selectedChild != null) {
@@ -742,7 +886,13 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                                     grades = list
                                     gradesLoaded = true
                                 } catch (t: Throwable) {
-                                    error = t.message
+                                    val msg = t.message ?: ""
+                                    if (msg.contains("Unauthorized", ignoreCase = true)) {
+                                        performAutoLogout()
+                                        error = "Session expired. Please log in again."
+                                    } else {
+                                        error = t.message
+                                    }
                                 } finally {
                                     loading = false
                                 }
@@ -791,7 +941,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                                                                     Text(comment, fontSize = 12.sp)
                                                                 }
                                                                 if (overridden) {
-                                                                    //Text("Overrides: ${g.overridesIds?.joinToString()}", fontSize = 11.sp)
+                                                                    Text("Overrides: ${g.overridesIds?.joinToString()}", fontSize = 11.sp)
                                                                 }
                                                             }
                                                         }
