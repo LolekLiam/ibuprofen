@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
+import retrofit2.http.Path
 
 interface AuthApi {
     @POST("m/login")
@@ -32,4 +33,18 @@ interface AuthApi {
         @Header("Authorization") authHeader: String,
         @Header("X-Child-Id") childUuid: String
     ): Response<GradesResponse>
+
+    // Free grades source: notifications
+    @GET("m/me/notifications")
+    suspend fun getNotifications(
+        @Header("Authorization") authHeader: String,
+        @Header("X-Child-Id") childUuid: String
+    ): Response<NotificationsResponse>
+
+    @GET("m/me/notifications/{lastId}")
+    suspend fun getNotificationsAfter(
+        @Header("Authorization") authHeader: String,
+        @Header("X-Child-Id") childUuid: String,
+        @Path("lastId") lastId: Long
+    ): Response<NotificationsResponse>
 }
