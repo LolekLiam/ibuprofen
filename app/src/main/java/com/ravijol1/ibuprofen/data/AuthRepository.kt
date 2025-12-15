@@ -7,6 +7,11 @@ class AuthRepository(
     private val api: AuthApi,
     private val store: TokenStore
 ) {
+    // Simple in-memory caches with TTLs (ms)
+    private val paidGradesCache = mutableMapOf<String, Pair<Long, List<SubjectGrades>>>() // key: childUuid
+    private val freeGradesCache = mutableMapOf<String, Pair<Long, List<SubjectGrades>>>() // key: childUuid
+    private val PAID_TTL_MS = 10 * 60 * 1000L
+    private val FREE_TTL_MS = 10 * 60 * 1000L
     data class Session(
         val accessToken: String,
         val refreshToken: String,
@@ -76,6 +81,11 @@ class AuthRepository(
         true
     }
 
+    fun clearCaches() {
+        paidGradesCache.clear()
+        freeGradesCache.clear()
+    }
+
     fun currentSession(): Session? {
         val at = store.accessToken ?: return null
         return Session(
@@ -127,6 +137,10 @@ class AuthRepository(
 
     // Paid grades fetch; returns empty list on error. Attempts one refresh on 401.
     suspend fun getGrades(childUuid: String): List<SubjectGrades> = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        paidGradesCache[childUuid]?.let { (ts, data) ->
+            if (now - ts <= PAID_TTL_MS) return@withContext data
+        }
         val token = store.accessToken ?: return@withContext emptyList()
         suspend fun call(bearer: String): retrofit2.Response<GradesResponse> {
             return api.getGrades(authHeader = bearer, childUuid = childUuid)
@@ -144,7 +158,9 @@ class AuthRepository(
             if (code == 401 || code == 403) error("Unauthorized")
             return@withContext emptyList()
         }
-        res.body()?.items ?: emptyList()
+        val list = res.body()?.items ?: emptyList()
+        paidGradesCache[childUuid] = System.currentTimeMillis() to list
+        list
     }
 
     // --- Free grades via notifications ---
