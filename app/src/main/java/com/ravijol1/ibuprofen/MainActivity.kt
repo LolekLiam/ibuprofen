@@ -158,6 +158,8 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
             autoDayAppliedKey = null
             error = null
             NetworkProvider.repository.clearChildCache()
+            // Clear auth-related caches (grades/notifications)
+            authRepo.clearCaches()
         }
     }
 
@@ -168,30 +170,20 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
             try {
                 val meta = NetworkProvider.repository.loadSchoolMeta(schoolKey)
                 schoolMeta = meta
-                selectedClass = meta.classes.firstOrNull()
+                // Do not auto-select a class; require explicit selection by user
+                selectedClass = null
+                // Set week to current from page
                 val targetWeek = meta.currentWeekId ?: 0
                 if (weekId != targetWeek) weekId = targetWeek
+                // Reset caches/state related to timetables and teacher aggregation
                 teacherAggregateCache.clear()
                 allWeeksCache = emptyList()
                 allWeeksCacheWeekId = null
-                selectedClass?.let { cls ->
-                    val tw = NetworkProvider.repository.loadTimetableWeek(meta.schoolId, cls.id, weekId)
-                    timetable = tw
-                    applyAutoDayFor(tw, datasetKey = "public:${cls.id}")
-                }
-                val allWeeks = NetworkProvider.repository.loadAllTimetablesForWeek(meta.schoolId, meta.classes, weekId)
-                allWeeksCache = allWeeks
-                allWeeksCacheWeekId = weekId
-                teachers = NetworkProvider.repository.collectTeachersFromTimetables(allWeeks)
-                if (selectedTeacher !in teachers) selectedTeacher = teachers.firstOrNull()
-                teacherWeek = selectedTeacher?.let { sel ->
-                    val built = NetworkProvider.repository.buildTeacherTimetable(allWeeksCache, sel)
-                    if (built != null) {
-                        teacherAggregateCache[weekId to sel] = built
-                        applyAutoDayFor(built, datasetKey = "teacher:$sel")
-                    }
-                    built
-                }
+                timetable = null
+                teacherWeek = null
+                selectedTeacher = null
+                selectedDayIndex = null
+                error = null
             } catch (t: Throwable) {
                 error = t.message
             } finally {
@@ -470,9 +462,13 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                                                 allWeeksCache = allWeeks
                                                 allWeeksCacheWeekId = weekId
                                                 teachers = NetworkProvider.repository.collectTeachersFromTimetables(allWeeks)
-                                                if (selectedTeacher !in teachers) selectedTeacher = teachers.firstOrNull()
                                             }
-                                            recomputeTeacherWeek()
+                                            // Do not auto-select a teacher; wait for explicit user selection
+                                            if (selectedTeacher != null) {
+                                                recomputeTeacherWeek()
+                                            } else {
+                                                teacherWeek = null
+                                            }
                                         }
                                     } catch (t: Throwable) {
                                         error = t.message
@@ -514,7 +510,8 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 }
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(onClick = { if (weekId > 0) scheduleWeekChange(weekId - 1) }) { Text("Week -") }
+                    val hasSelection = (teacherMode && selectedTeacher != null) || (!teacherMode && selectedClass != null)
+                    OutlinedButton(onClick = { if (weekId > 0) scheduleWeekChange(weekId - 1) }, enabled = hasSelection) { Text("Week -") }
                     val displayWeek = if (teacherMode) teacherWeek else timetable
                     val week = displayWeek
                     val df = DateTimeFormatter.ofPattern("d. M. yyyy")
@@ -536,7 +533,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                             )
                         }
                     }
-                    OutlinedButton(onClick = { if (weekId < 52) scheduleWeekChange(weekId + 1) }) { Text("Week +") }
+                    OutlinedButton(onClick = { if (weekId < 52) scheduleWeekChange(weekId + 1) }, enabled = hasSelection) { Text("Week +") }
                 }
 
                 Spacer(Modifier.height(8.dp))
@@ -613,7 +610,11 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 } else {
-                    if (teacherMode) { Text("Select a teacher to view their timetable for the current week") }
+                    if (teacherMode) {
+                        Text("Select a teacher to view their timetable for the current week")
+                    } else {
+                        Text("Select a class to view the timetable for the current week")
+                    }
                 }
             }
             AppTab.Child -> {
