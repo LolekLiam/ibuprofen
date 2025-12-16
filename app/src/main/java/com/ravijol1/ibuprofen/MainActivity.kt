@@ -3,6 +3,12 @@ package com.ravijol1.ibuprofen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.Manifest
+import android.os.Build
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -51,8 +59,11 @@ import com.ravijol1.ibuprofen.data.AuthRepository
 import com.ravijol1.ibuprofen.data.ChildProfile
 import com.ravijol1.ibuprofen.ui.theme.IbuprofenTheme
 import kotlinx.coroutines.Job
+import com.ravijol1.ibuprofen.data.ReminderWorker
+import com.ravijol1.ibuprofen.data.NotificationHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import java.time.format.DateTimeFormatter
 
 // App tabs
@@ -62,10 +73,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val initialTab = when (intent.getStringExtra("open_tab")) {
+            "Child" -> AppTab.Child
+            "Public" -> AppTab.Public
+            "Grades" -> AppTab.Grades
+            "Login" -> AppTab.Login
+            else -> null
+        }
+        val jumpDate = intent.getStringExtra("jump_to_child_date")
+        val jumpTime = intent.getStringExtra("jump_to_child_time")
+        val jumpPeriod = intent.getIntExtra("jump_to_child_period", -1).takeIf { it > 0 }
         setContent {
             IbuprofenTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    TimetableScreen(modifier = Modifier.padding(innerPadding))
+                    TimetableScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        initialTab = initialTab,
+                        jumpToChildDate = jumpDate,
+                        jumpToChildTime = jumpTime,
+                        jumpToChildPeriod = jumpPeriod
+                    )
                 }
             }
         }
@@ -73,16 +100,28 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TimetableScreen(modifier: Modifier = Modifier) {
+fun TimetableScreen(
+    modifier: Modifier = Modifier,
+    initialTab: AppTab? = null,
+    jumpToChildDate: String? = null,
+    jumpToChildTime: String? = null,
+    jumpToChildPeriod: Int? = null
+) {
     val scope = rememberCoroutineScope()
+    // Deep link jump targets from notification
+    val pendingJumpDateState = remember { mutableStateOf(jumpToChildDate) }
+    val pendingJumpTimeState = remember { mutableStateOf(jumpToChildTime) }
+    val pendingJumpPeriodState = remember { mutableStateOf(jumpToChildPeriod) }
+
     // Auth/session
     val context = LocalContext.current
     val tokenStore = remember(context) { TokenStore(context.applicationContext) }
+    val settingsStore = remember(context) { com.ravijol1.ibuprofen.data.SettingsStore(context.applicationContext) }
     val authRepo = remember { AuthRepository(NetworkProvider.authApi, tokenStore) }
     var session by remember { mutableStateOf(authRepo.currentSession()) }
 
     // Tabs
-    var selectedTab by remember { mutableStateOf(AppTab.Public) }
+    var selectedTab by remember { mutableStateOf(initialTab ?: AppTab.Public) }
 
     var schoolKey by remember { mutableStateOf("5738623c4f3588f82583378c44ceb026102d6bae") }
 
@@ -127,6 +166,47 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
     var password by remember { mutableStateOf("") }
     var authError by remember { mutableStateOf<String?>(null) }
 
+    // Reminders state
+    var remindersEnabled by remember { mutableStateOf(settingsStore.remindersEnabled) }
+
+    fun onEnableReminders() {
+        val child = selectedChild
+        val s = session
+        if (child == null || s == null) {
+            error = "Select a child and login to enable reminders."
+            remindersEnabled = false
+            settingsStore.remindersEnabled = false
+            return
+        }
+        // Persist child selection for worker
+        settingsStore.selectedChildUuid = child.uuid
+        settingsStore.selectedChildStudentId = child.studentId
+        settingsStore.selectedChildClassId = child.classId
+        settingsStore.remindersEnabled = true
+        remindersEnabled = true
+        // Ensure channel and enqueue worker
+        NotificationHelper.ensureChannel(context.applicationContext)
+        ReminderWorker.enable(context.applicationContext)
+    }
+
+    fun onDisableReminders() {
+        settingsStore.remindersEnabled = false
+        remindersEnabled = false
+        ReminderWorker.disable(context.applicationContext)
+    }
+
+    val notificationsPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            onEnableReminders()
+        } else {
+            remindersEnabled = false
+            settingsStore.remindersEnabled = false
+            error = "Notification permission denied."
+        }
+    }
+
     fun computeDefaultDayIndex(week: TimetableWeek?): Int? {
         if (week == null) return null
         val today = java.time.LocalDate.now()
@@ -151,6 +231,9 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
         scope.launch {
             try { authRepo.logout() } catch (_: Throwable) {}
             session = null
+            // Disable reminders and clear stored child selection
+            onDisableReminders()
+            settingsStore.clearChild()
             // Clear child-related state and caches
             children = emptyList()
             selectedChild = null
@@ -185,6 +268,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 selectedDayIndex = null
                 error = null
             } catch (t: Throwable) {
+                if (t is CancellationException) return@launch
                 error = t.message
             } finally {
                 loading = false
@@ -204,6 +288,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 timetable = tw
                 applyAutoDayFor(tw, datasetKey = "public:${cls.id}")
             } catch (t: Throwable) {
+                if (t is CancellationException) return@launch
                 error = t.message
             } finally {
                 loading = false
@@ -245,6 +330,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 }
                 recomputeTeacherWeek()
             } catch (t: Throwable) {
+                if (t is CancellationException) return@launch
                 error = t.message
             } finally {
                 loading = false
@@ -270,6 +356,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                 childTimetable = tw
                 applyAutoDayFor(tw, datasetKey = "child:${child.studentId}")
             } catch (t: Throwable) {
+                if (t is CancellationException) return@launch
                 val msg = t.message ?: ""
                 if (msg.contains("Unauthorized", ignoreCase = true)) {
                     // Try refresh once
@@ -289,6 +376,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                                 childTimetable = tw2
                                 applyAutoDayFor(tw2, datasetKey = "child:${child.studentId}")
                             } catch (t2: Throwable) {
+                                if (t2 is CancellationException) return@launch
                                 // Auto logout on persistent unauthorized
                                 if ((t2.message ?: "").contains("Unauthorized", true)) {
                                     performAutoLogout()
@@ -343,6 +431,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                     loadChildTimetable()
                 }
             } catch (t: Throwable) {
+                if (t is CancellationException) return@launch
                 val msg = t.message ?: ""
                 if (msg.contains("Unauthorized", ignoreCase = true)) {
                     performAutoLogout()
@@ -362,6 +451,22 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
         session = authRepo.currentSession()
         // Auto-load public page
         loadSchool()
+    }
+    // Auto-resume reminders scheduling if enabled and we have a session + child selection
+    LaunchedEffect(session, remindersEnabled) {
+        if (remindersEnabled && session != null) {
+            // Ensure a child is persisted; if current selectedChild is available, persist it
+            selectedChild?.let { ch ->
+                settingsStore.selectedChildUuid = ch.uuid
+                settingsStore.selectedChildStudentId = ch.studentId
+                settingsStore.selectedChildClassId = ch.classId
+            }
+            // Only enable if we have at least studentId stored
+            if (settingsStore.selectedChildStudentId != null) {
+                NotificationHelper.ensureChannel(context.applicationContext)
+                ReminderWorker.enable(context.applicationContext)
+            }
+        }
     }
 
     Column(modifier = modifier.padding(16.dp)) {
@@ -640,6 +745,13 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                                     childMenuExpanded = false
                                     if (selectedChild?.uuid != ch.uuid) {
                                         selectedChild = ch
+                                        // Persist selection for reminders
+                                        settingsStore.selectedChildUuid = ch.uuid
+                                        settingsStore.selectedChildStudentId = ch.studentId
+                                        settingsStore.selectedChildClassId = ch.classId
+                                        if (remindersEnabled) {
+                                            ReminderWorker.enable(context.applicationContext)
+                                        }
                                         loadChildTimetable()
                                     }
                                 })
@@ -647,12 +759,30 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                         }
                     }
                     Spacer(Modifier.height(8.dp))
+                    // Lesson reminders toggle
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = remindersEnabled,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                                        notificationsPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                    } else {
+                                        onEnableReminders()
+                                    }
+                                } else {
+                                    onDisableReminders()
+                                }
+                            }
+                        )
+                        Text("Lesson reminders (5 min before next period)")
+                    }
+                    Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                         OutlinedButton(onClick = { if (weekId > 0) scheduleWeekChange(weekId - 1) }) { Text("Week -") }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
 
-                            val displayWeek = if (teacherMode) teacherWeek else timetable
-                            val week = displayWeek
+                            val week = childTimetable
                             val df = DateTimeFormatter.ofPattern("d. M. yyyy")
                             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
@@ -683,6 +813,23 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                     error?.let { err -> Text(text = "Error: $err") }
                     val week = childTimetable
                     if (week != null) {
+                        // Apply pending deep-link jump to a specific day/period coming from a notification
+                        LaunchedEffect(week, pendingJumpDateState.value, pendingJumpTimeState.value) {
+                            val dateStr = pendingJumpDateState.value
+                            if (!dateStr.isNullOrBlank()) {
+                                val target = try { java.time.LocalDate.parse(dateStr) } catch (_: Throwable) { null }
+                                val idx = week.days.indexOfFirst { it.date == target }
+                                if (idx >= 0) {
+                                    selectedDayIndex = idx
+                                }
+                                // Clear pending jump once applied
+                                pendingJumpDateState.value = null
+                                pendingJumpTimeState.value = null
+                                pendingJumpPeriodState.value = null
+                                // Ensure we are on Child tab
+                                selectedTab = AppTab.Child
+                            }
+                        }
                         Spacer(Modifier.height(6.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                             item {
@@ -815,6 +962,7 @@ fun TimetableScreen(modifier: Modifier = Modifier) {
                                     freeGrades = list
                                     freeLoaded = true
                                 } catch (t: Throwable) {
+                                    if (t is CancellationException) return@LaunchedEffect
                                     val msg = t.message ?: ""
                                     if (msg.contains("Unauthorized", ignoreCase = true)) {
                                         performAutoLogout()
