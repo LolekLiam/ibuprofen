@@ -3,6 +3,7 @@ package com.ravijol1.ibuprofen.data
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import androidx.core.content.edit
 
 class SettingsStore(context: Context) { 
     private val masterKey = MasterKey.Builder(context)
@@ -19,23 +20,23 @@ class SettingsStore(context: Context) {
 
     var remindersEnabled: Boolean
         get() = prefs.getBoolean(KEY_REMINDERS_ENABLED, false)
-        set(value) { prefs.edit().putBoolean(KEY_REMINDERS_ENABLED, value).apply() }
+        set(value) { prefs.edit { putBoolean(KEY_REMINDERS_ENABLED, value) } }
 
     var selectedChildUuid: String?
         get() = prefs.getString(KEY_CHILD_UUID, null)
-        set(value) { prefs.edit().putString(KEY_CHILD_UUID, value).apply() }
+        set(value) { prefs.edit { putString(KEY_CHILD_UUID, value) } }
 
     var selectedChildStudentId: Int?
         get() = prefs.getInt(KEY_CHILD_STUDENT_ID, -1).takeIf { it >= 0 }
-        set(value) { prefs.edit().putInt(KEY_CHILD_STUDENT_ID, value ?: -1).apply() }
+        set(value) { prefs.edit { putInt(KEY_CHILD_STUDENT_ID, value ?: -1) } }
 
     var selectedChildClassId: Int?
         get() = prefs.getInt(KEY_CHILD_CLASS_ID, -1).takeIf { it >= 0 }
-        set(value) { prefs.edit().putInt(KEY_CHILD_CLASS_ID, value ?: -1).apply() }
+        set(value) { prefs.edit { putInt(KEY_CHILD_CLASS_ID, value ?: -1) } }
 
     var lastReminderStartEpoch: Long?
         get() = prefs.getLong(KEY_LAST_REMINDER_EPOCH, -1L).takeIf { it >= 0 }
-        set(value) { prefs.edit().putLong(KEY_LAST_REMINDER_EPOCH, value ?: -1L).apply() }
+        set(value) { prefs.edit { putLong(KEY_LAST_REMINDER_EPOCH, value ?: -1L) } }
 
     fun clearChild() {
         selectedChildUuid = null
