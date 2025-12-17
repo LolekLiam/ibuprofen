@@ -1,7 +1,6 @@
 package com.ravijol1.ibuprofen.data
 
 import com.google.gson.annotations.SerializedName
-import java.time.OffsetDateTime
 
 // Requests
 
