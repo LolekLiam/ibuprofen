@@ -7,9 +7,11 @@ import android.content.Intent
 class BootCompletedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (Intent.ACTION_BOOT_COMPLETED == intent.action) {
-            val settings = SettingsStore(context.applicationContext)
+            val appCtx = context.applicationContext
+            val settings = SettingsStore(appCtx)
             if (settings.remindersEnabled) {
-                ReminderWorker.rescheduleOnBoot(context.applicationContext)
+                ReminderWorker.rescheduleOnBoot(appCtx)
+                ReminderPlannerService.enqueue(appCtx)
             }
         }
     }
