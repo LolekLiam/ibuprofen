@@ -102,7 +102,17 @@ object TimetableParser {
                 blocks += cell.select("div.ednevnik-seznam_ur_teden-blok-wrap").toList()
                 blocks += cell.select("div.hidden.teden-blok-wrapper div.ednevnik-seznam_ur_teden-blok-wrap").toList()
 
-                val lessons = blocks.mapNotNull { block -> parseLesson(block, isCancelledCell) }
+                val rawLessons = blocks.mapNotNull { block -> parseLesson(block, isCancelledCell) }
+                // Deduplicate lessons within the same period cell (visible + hidden variants sometimes repeat)
+                val lessons = rawLessons.distinctBy { les ->
+                    listOf(
+                        les.subjectCode ?: les.subjectTitle ?: "",
+                        les.teacherFullName ?: les.teacher ?: "",
+                        les.room ?: "",
+                        les.groupLabel ?: "",
+                        les.isCancelled.toString()
+                    ).joinToString("|")
+                }
 
                 perDay += if (lessons.isEmpty()) PeriodCell.Empty else PeriodCell.WithLessons(
                     periodNumber = periodNumber,
