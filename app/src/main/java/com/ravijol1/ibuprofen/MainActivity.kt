@@ -1,15 +1,15 @@
 package com.ravijol1.ibuprofen
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import android.Manifest
-import android.os.Build
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,21 +17,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,27 +42,30 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
+import com.ravijol1.ibuprofen.data.AuthRepository
+import com.ravijol1.ibuprofen.data.ChildProfile
 import com.ravijol1.ibuprofen.data.ClassInfo
 import com.ravijol1.ibuprofen.data.NetworkProvider
+import com.ravijol1.ibuprofen.data.NotificationHelper
 import com.ravijol1.ibuprofen.data.PeriodCell
+import com.ravijol1.ibuprofen.data.ReminderWorker
 import com.ravijol1.ibuprofen.data.SchoolMeta
 import com.ravijol1.ibuprofen.data.TimetableWeek
 import com.ravijol1.ibuprofen.data.TokenStore
-import com.ravijol1.ibuprofen.data.AuthRepository
-import com.ravijol1.ibuprofen.data.ChildProfile
 import com.ravijol1.ibuprofen.ui.theme.IbuprofenTheme
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import com.ravijol1.ibuprofen.data.ReminderWorker
-import com.ravijol1.ibuprofen.data.NotificationHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CancellationException
 import java.time.format.DateTimeFormatter
 
 // App tabs
@@ -122,6 +124,20 @@ fun TimetableScreen(
 
     // Tabs
     var selectedTab by remember { mutableStateOf(initialTab ?: AppTab.Public) }
+    val tabsList = remember { AppTab.values().toList() }
+    val pagerState = rememberPagerState(initialPage = selectedTab.ordinal, pageCount = { tabsList.size })
+
+    // Keep TabRow and pager in sync both ways
+    LaunchedEffect(selectedTab) {
+        val target = selectedTab.ordinal
+        if (pagerState.currentPage != target) {
+            scope.launch { pagerState.animateScrollToPage(target) }
+        }
+    }
+    LaunchedEffect(pagerState.currentPage) {
+        val newTab = tabsList[pagerState.currentPage]
+        if (selectedTab != newTab) selectedTab = newTab
+    }
 
     var schoolKey by remember { mutableStateOf("5738623c4f3588f82583378c44ceb026102d6bae") }
 
@@ -184,9 +200,10 @@ fun TimetableScreen(
         settingsStore.selectedChildClassId = child.classId
         settingsStore.remindersEnabled = true
         remindersEnabled = true
-        // Ensure channel and enqueue worker
+        // Ensure channel and enqueue worker + planner service
         NotificationHelper.ensureChannel(context.applicationContext)
         ReminderWorker.enable(context.applicationContext)
+        com.ravijol1.ibuprofen.data.ReminderPlannerService.enqueue(context.applicationContext)
     }
 
     fun onDisableReminders() {
@@ -469,7 +486,31 @@ fun TimetableScreen(
         }
     }
 
-    Column(modifier = modifier.padding(16.dp)) {
+    // Enable swipe left/right anywhere in content to switch tabs
+    var totalDx by remember { mutableStateOf(0f) }
+    fun switchTabBy(delta: Int) {
+        val idx = (selectedTab.ordinal + delta).coerceIn(0, tabsList.lastIndex)
+        selectedTab = tabsList[idx]
+    }
+    Column(modifier = modifier
+        .fillMaxSize()
+        .padding(16.dp)
+        .pointerInput(selectedTab) {
+            detectHorizontalDragGestures(
+                onHorizontalDrag = { _, dragAmount ->
+                    totalDx += dragAmount
+                },
+                onDragEnd = {
+                    val thresholdPx = 50f
+                    if (kotlin.math.abs(totalDx) > thresholdPx) {
+                        if (totalDx < 0) switchTabBy(+1) else switchTabBy(-1)
+                    }
+                    totalDx = 0f
+                },
+                onDragCancel = { totalDx = 0f }
+            )
+        }
+    ) {
         // Tabs
         androidx.compose.material3.TabRow(selectedTabIndex = selectedTab.ordinal) {
             listOf(AppTab.Login, AppTab.Public, AppTab.Child, AppTab.Grades).forEachIndexed { index, tab ->
@@ -997,7 +1038,8 @@ fun TimetableScreen(
                                                         Text("No grades", fontSize = 13.sp)
                                                     } else {
                                                         sem.grades.forEach { g ->
-                                                            val color = try { androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(g.color ?: "#000000")) } catch (_: Throwable) { androidx.compose.ui.graphics.Color.Unspecified }
+                                                            val color = try { androidx.compose.ui.graphics.Color(
+                                                                (g.color ?: "#000000").toColorInt()) } catch (_: Throwable) { androidx.compose.ui.graphics.Color.Unspecified }
                                                             Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                                     Text(g.value ?: "?", color = color, fontWeight = FontWeight.SemiBold)
@@ -1075,7 +1117,8 @@ fun TimetableScreen(
                                                         Text("No grades", fontSize = 13.sp)
                                                     } else {
                                                         sem.grades.forEach { g ->
-                                                            val color = try { androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(g.color ?: "#000000")) } catch (_: Throwable) { androidx.compose.ui.graphics.Color.Unspecified }
+                                                            val color = try { androidx.compose.ui.graphics.Color(
+                                                                (g.color ?: "#000000").toColorInt()) } catch (_: Throwable) { androidx.compose.ui.graphics.Color.Unspecified }
                                                             val overridden = (g.overridesIds?.isNotEmpty() == true)
                                                             Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                                                                 Row(verticalAlignment = Alignment.CenterVertically) {
