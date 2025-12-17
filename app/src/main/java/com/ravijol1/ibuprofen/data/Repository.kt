@@ -14,6 +14,15 @@ class TimetableRepository(private val api: EAsistentApi) {
     // In-memory cache for child: (schoolId, studentId, weekId) -> TimetableWeek
     private val childWeekCache = ConcurrentHashMap<Triple<Int, Int, Int>, TimetableWeek>()
 
+    fun clearAllCaches() {
+        weekCache.clear()
+        childWeekCache.clear()
+    }
+
+    fun clearChildCache() {
+        childWeekCache.clear()
+    }
+
     suspend fun loadSchoolMeta(schoolKey: String): SchoolMeta {
         val res = api.getSchoolPage(schoolKey)
         val body = res.body() ?: error("Empty school page")
@@ -53,6 +62,11 @@ class TimetableRepository(private val api: EAsistentApi) {
             weekId = weekId,
             extracurriculars = 0
         )
+        if (!res.isSuccessful) {
+            val code = res.code()
+            if (code == 401 || code == 403) error("Unauthorized (HTTP $code)")
+            error("Timetable error: HTTP $code")
+        }
         val body = res.body() ?: error("Empty timetable body")
         val parsed = TimetableParser.parse(classId.takeIf { it != 0 } ?: -1, body)
         childWeekCache[key] = parsed
@@ -192,10 +206,21 @@ class TimetableRepository(private val api: EAsistentApi) {
                 } else {
                     slot.ranges.firstOrNull() ?: (java.time.LocalTime.MIDNIGHT..java.time.LocalTime.MIDNIGHT)
                 }
+                // Deduplicate lessons within the same teacher slot while preserving different classes
+                val dedupLessons = slot.lessons.distinctBy { les ->
+                    listOf(
+                        les.subjectCode ?: les.subjectTitle ?: "",
+                        les.teacherFullName ?: les.teacher ?: "",
+                        les.room ?: "",
+                        les.groupLabel ?: "",
+                        les.sourceClassLabel ?: "",
+                        les.isCancelled.toString()
+                    ).joinToString("|")
+                }
                 periodCells += PeriodCell.WithLessons(
                     periodNumber = periodNum,
                     timeRange = timeRange,
-                    lessons = slot.lessons.toList()
+                    lessons = dedupLessons
                 )
             }
 
