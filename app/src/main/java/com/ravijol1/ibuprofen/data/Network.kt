@@ -33,6 +33,8 @@ object NetworkProvider {
                     .header("X-App-Name", "child")
                     .header("Accept", "application/json")
                     .header("Content-Type", "application/json; charset=utf-8")
+                    .header("X-Device-Id", "child_device")
+                    .header("X-Requested-With", "XMLHttpRequest")
                     .header("X-client-version", "11102")
                     .header("x-client-platform", "android")
                     .header("User-Agent", "ibuprofen/0.4 (Android)")
