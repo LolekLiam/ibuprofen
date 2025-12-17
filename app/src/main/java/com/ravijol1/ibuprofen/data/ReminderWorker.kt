@@ -135,40 +135,6 @@ class ReminderWorker(
         WorkManager.getInstance(ctx).enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, req)
     }
 
-    private fun scheduleExactAlarm(
-        ctx: Context,
-        epochSeconds: Long,
-        fireAtEpochSeconds: Long,
-        title: String,
-        message: String,
-        dateIso: String,
-        timeHm: String
-    ) {
-        val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(ctx, ReminderAlarmReceiver::class.java).apply {
-            action = ACTION_REMINDER
-            putExtra(EXTRA_START_EPOCH, epochSeconds)
-            putExtra(EXTRA_TITLE, title)
-            putExtra(EXTRA_MESSAGE, message)
-            putExtra(EXTRA_DATE, dateIso)
-            putExtra(EXTRA_TIME, timeHm)
-        }
-        val pi = PendingIntent.getBroadcast(
-            ctx,
-            REQUEST_CODE,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val triggerMs = fireAtEpochSeconds * 1000L
-        try {
-            // API 31+: apps may be restricted from exact alarms; attempt and fallback on failure
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMs, pi)
-        } catch (se: SecurityException) {
-            // Fallback: schedule planner with approximate delay
-            val approx = Duration.ofMillis(triggerMs - System.currentTimeMillis())
-            schedulePlannerWork(ctx, approx.coerceAtLeast(Duration.ofMinutes(1)))
-        }
-    }
 
     companion object ReminderScheduler {
         private val ZONE: ZoneId = ZoneId.of("Europe/Ljubljana")
@@ -203,6 +169,43 @@ class ReminderWorker(
 
         fun rescheduleOnBoot(ctx: Context) {
             enable(ctx)
+        }
+
+        fun scheduleExactAlarm(
+            ctx: Context,
+            epochSeconds: Long,
+            fireAtEpochSeconds: Long,
+            title: String,
+            message: String,
+            dateIso: String,
+            timeHm: String
+        ) {
+            val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(ctx, ReminderAlarmReceiver::class.java).apply {
+                action = ACTION_REMINDER
+                putExtra(EXTRA_START_EPOCH, epochSeconds)
+                putExtra(EXTRA_TITLE, title)
+                putExtra(EXTRA_MESSAGE, message)
+                putExtra(EXTRA_DATE, dateIso)
+                putExtra(EXTRA_TIME, timeHm)
+            }
+            val pi = PendingIntent.getBroadcast(
+                ctx,
+                REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            val triggerMs = fireAtEpochSeconds * 1000L
+            try {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMs, pi)
+            } catch (_: SecurityException) {
+                // Fallback: approximate schedule using WorkManager re-plan
+                val delay = Duration.ofMillis(triggerMs - System.currentTimeMillis()).coerceAtLeast(Duration.ofMinutes(1))
+                val req = OneTimeWorkRequestBuilder<ReminderWorker>()
+                    .setInitialDelay(delay)
+                    .build()
+                WorkManager.getInstance(ctx).enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, req)
+            }
         }
 
         private fun nextSchoolCheckDelay(now: LocalDateTime): Duration {
