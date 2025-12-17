@@ -3,7 +3,6 @@ package com.ravijol1.ibuprofen.data
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import java.time.ZoneId
 
 /**
  * Receives the exact alarm at the planned fire time and displays the lesson reminder.
