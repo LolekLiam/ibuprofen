@@ -19,7 +19,7 @@ Open this project in Android Studio, configure your Android SDK, and build the `
 ./gradlew :app:assembleDebug
 ```
 
-The APK is generated in `app/build/outputs/apk/debug/`. The proxy is optional; see [ibuprofen API](ibuprofen-api/README.md) for server installation and app configuration. HTTP LAN URLs and HTTPS URLs are supported.
+The APK is generated in `app/build/outputs/apk/debug/`. The proxy is optional; see [ibuprofen API](https://github.com/LolekLiam/ibuprofen-api) for server installation and app configuration. HTTP LAN URLs and HTTPS URLs are supported.
 
 # License
 
