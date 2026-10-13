@@ -1,0 +1,2283 @@
+{
+  "items": [
+    {
+      "week_index": 1,
+      "current": false,
+      "from": "2026-08-31",
+      "to": "2026-09-04",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-08-31",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-09-01",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-09-02",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-09-03",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-09-04",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 2,
+      "current": false,
+      "from": "2026-09-07",
+      "to": "2026-09-11",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-09-07",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-09-08",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-09-09",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-09-10",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-09-11",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 3,
+      "current": false,
+      "from": "2026-09-14",
+      "to": "2026-09-18",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-09-14",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-09-15",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-09-16",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-09-17",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-09-18",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 4,
+      "current": false,
+      "from": "2026-09-21",
+      "to": "2026-09-25",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-09-21",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-09-22",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-09-23",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-09-24",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-09-25",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 5,
+      "current": false,
+      "from": "2026-09-28",
+      "to": "2026-10-02",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-09-28",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-09-29",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-09-30",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-10-01",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-10-02",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 6,
+      "current": false,
+      "from": "2026-10-05",
+      "to": "2026-10-09",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-10-05",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-10-06",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-10-07",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-10-08",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-10-09",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 7,
+      "current": true,
+      "from": "2026-10-12",
+      "to": "2026-10-16",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-10-12",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-10-13",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": true
+        },
+        {
+          "id": 3,
+          "date": "2026-10-14",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-10-15",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-10-16",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 8,
+      "current": false,
+      "from": "2026-10-19",
+      "to": "2026-10-23",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-10-19",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-10-20",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-10-21",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-10-22",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-10-23",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 9,
+      "current": false,
+      "from": "2026-10-26",
+      "to": "2026-10-30",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-10-26",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-10-27",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-10-28",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-10-29",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-10-30",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 10,
+      "current": false,
+      "from": "2026-11-02",
+      "to": "2026-11-06",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-11-02",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-11-03",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-11-04",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-11-05",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-11-06",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 11,
+      "current": false,
+      "from": "2026-11-09",
+      "to": "2026-11-13",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-11-09",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-11-10",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-11-11",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-11-12",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-11-13",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 12,
+      "current": false,
+      "from": "2026-11-16",
+      "to": "2026-11-20",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-11-16",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-11-17",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-11-18",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-11-19",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-11-20",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 13,
+      "current": false,
+      "from": "2026-11-23",
+      "to": "2026-11-27",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-11-23",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-11-24",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-11-25",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-11-26",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-11-27",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 14,
+      "current": false,
+      "from": "2026-11-30",
+      "to": "2026-12-04",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-11-30",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-12-01",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-12-02",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-12-03",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-12-04",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 15,
+      "current": false,
+      "from": "2026-12-07",
+      "to": "2026-12-11",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-12-07",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-12-08",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-12-09",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-12-10",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-12-11",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 16,
+      "current": false,
+      "from": "2026-12-14",
+      "to": "2026-12-18",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-12-14",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-12-15",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-12-16",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-12-17",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-12-18",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 17,
+      "current": false,
+      "from": "2026-12-21",
+      "to": "2026-12-25",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-12-21",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-12-22",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-12-23",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-12-24",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2026-12-25",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 18,
+      "current": false,
+      "from": "2026-12-28",
+      "to": "2027-01-01",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-12-28",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-12-29",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-12-30",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-12-31",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-01-01",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 19,
+      "current": false,
+      "from": "2027-01-04",
+      "to": "2027-01-08",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-01-04",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-01-05",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-01-06",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-01-07",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-01-08",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 20,
+      "current": false,
+      "from": "2027-01-11",
+      "to": "2027-01-15",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-01-11",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-01-12",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-01-13",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-01-14",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-01-15",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 21,
+      "current": false,
+      "from": "2027-01-18",
+      "to": "2027-01-22",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-01-18",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-01-19",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-01-20",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-01-21",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-01-22",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 22,
+      "current": false,
+      "from": "2027-01-25",
+      "to": "2027-01-29",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-01-25",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-01-26",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-01-27",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-01-28",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-01-29",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 23,
+      "current": false,
+      "from": "2027-02-01",
+      "to": "2027-02-05",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-02-01",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-02-02",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-02-03",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-02-04",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-02-05",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 24,
+      "current": false,
+      "from": "2027-02-08",
+      "to": "2027-02-12",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-02-08",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-02-09",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-02-10",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-02-11",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-02-12",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 25,
+      "current": false,
+      "from": "2027-02-15",
+      "to": "2027-02-19",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-02-15",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-02-16",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-02-17",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-02-18",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-02-19",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 26,
+      "current": false,
+      "from": "2027-02-22",
+      "to": "2027-02-26",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-02-22",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-02-23",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-02-24",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-02-25",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-02-26",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 27,
+      "current": false,
+      "from": "2027-03-01",
+      "to": "2027-03-05",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-03-01",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-03-02",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-03-03",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-03-04",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-03-05",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 28,
+      "current": false,
+      "from": "2027-03-08",
+      "to": "2027-03-12",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-03-08",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-03-09",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-03-10",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-03-11",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-03-12",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 29,
+      "current": false,
+      "from": "2027-03-15",
+      "to": "2027-03-19",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-03-15",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-03-16",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-03-17",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-03-18",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-03-19",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 30,
+      "current": false,
+      "from": "2027-03-22",
+      "to": "2027-03-26",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-03-22",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-03-23",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-03-24",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-03-25",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-03-26",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 31,
+      "current": false,
+      "from": "2027-03-29",
+      "to": "2027-04-02",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-03-29",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-03-30",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-03-31",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-04-01",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-04-02",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 32,
+      "current": false,
+      "from": "2027-04-05",
+      "to": "2027-04-09",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-04-05",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-04-06",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-04-07",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-04-08",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-04-09",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 33,
+      "current": false,
+      "from": "2027-04-12",
+      "to": "2027-04-16",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-04-12",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-04-13",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-04-14",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-04-15",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-04-16",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 34,
+      "current": false,
+      "from": "2027-04-19",
+      "to": "2027-04-23",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-04-19",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-04-20",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-04-21",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-04-22",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-04-23",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 35,
+      "current": false,
+      "from": "2027-04-26",
+      "to": "2027-04-30",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-04-26",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-04-27",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-04-28",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-04-29",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-04-30",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 36,
+      "current": false,
+      "from": "2027-05-03",
+      "to": "2027-05-07",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-05-03",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-05-04",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-05-05",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-05-06",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-05-07",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 37,
+      "current": false,
+      "from": "2027-05-10",
+      "to": "2027-05-14",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-05-10",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-05-11",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-05-12",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-05-13",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-05-14",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 38,
+      "current": false,
+      "from": "2027-05-17",
+      "to": "2027-05-21",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-05-17",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-05-18",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-05-19",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-05-20",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-05-21",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 39,
+      "current": false,
+      "from": "2027-05-24",
+      "to": "2027-05-28",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-05-24",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-05-25",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-05-26",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-05-27",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-05-28",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 40,
+      "current": false,
+      "from": "2027-05-31",
+      "to": "2027-06-04",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-05-31",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-06-01",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-06-02",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-06-03",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-06-04",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 41,
+      "current": false,
+      "from": "2027-06-07",
+      "to": "2027-06-11",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-06-07",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-06-08",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-06-09",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-06-10",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-06-11",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 42,
+      "current": false,
+      "from": "2027-06-14",
+      "to": "2027-06-18",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-06-14",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-06-15",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-06-16",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-06-17",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-06-18",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 43,
+      "current": false,
+      "from": "2027-06-21",
+      "to": "2027-06-25",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-06-21",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-06-22",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-06-23",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-06-24",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-06-25",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 44,
+      "current": false,
+      "from": "2027-06-28",
+      "to": "2027-07-02",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-06-28",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-06-29",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-06-30",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-07-01",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-07-02",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 45,
+      "current": false,
+      "from": "2027-07-05",
+      "to": "2027-07-09",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-07-05",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-07-06",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-07-07",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-07-08",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-07-09",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 46,
+      "current": false,
+      "from": "2027-07-12",
+      "to": "2027-07-16",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-07-12",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-07-13",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-07-14",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-07-15",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-07-16",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 47,
+      "current": false,
+      "from": "2027-07-19",
+      "to": "2027-07-23",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-07-19",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-07-20",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-07-21",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-07-22",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-07-23",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 48,
+      "current": false,
+      "from": "2027-07-26",
+      "to": "2027-07-30",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-07-26",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-07-27",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-07-28",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-07-29",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-07-30",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 49,
+      "current": false,
+      "from": "2027-08-02",
+      "to": "2027-08-06",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-08-02",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-08-03",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-08-04",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-08-05",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-08-06",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 50,
+      "current": false,
+      "from": "2027-08-09",
+      "to": "2027-08-13",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-08-09",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-08-10",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-08-11",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-08-12",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-08-13",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 51,
+      "current": false,
+      "from": "2027-08-16",
+      "to": "2027-08-20",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-08-16",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-08-17",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-08-18",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-08-19",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-08-20",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 52,
+      "current": false,
+      "from": "2027-08-23",
+      "to": "2027-08-27",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-08-23",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-08-24",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-08-25",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-08-26",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-08-27",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 53,
+      "current": false,
+      "from": "2027-08-30",
+      "to": "2027-09-03",
+      "days": [
+        {
+          "id": 1,
+          "date": "2027-08-30",
+          "name": "Monday",
+          "short_name": "Mon",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2027-08-31",
+          "name": "Tuesday",
+          "short_name": "Tue",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2027-09-01",
+          "name": "Wednesday",
+          "short_name": "Wed",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2027-09-02",
+          "name": "Thursday",
+          "short_name": "Thu",
+          "current": false
+        },
+        {
+          "id": 5,
+          "date": "2027-09-03",
+          "name": "Friday",
+          "short_name": "Fri",
+          "current": false
+        }
+      ]
+    }
+  ]
+}

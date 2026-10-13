@@ -13,7 +13,7 @@ class MobileTimetableTest {
     private val student = ChildProfile("child_uuid_15_2026_777_88_99", 99, 88, "Example", "1A", "Example School", null)
     private val monday = LocalDate.of(2026, 10, 12)
 
-    @Test fun capturedScheduleSeparatesSchoolEventsAndUsesActualLessonTimes() {
+    @Test fun syntheticScheduleSeparatesSchoolEventsAndUsesLessonTimes() {
         val response = gson.fromJson(fixture("events.json"), MobileTimetableResponse::class.java)
         val result = MobileTimetableMapper.map(response, student, monday, monday.plusDays(4))
         val lessons = result.week.days.flatMap { it.lessonsByPeriod }.filterIsInstance<PeriodCell.WithLessons>()
@@ -22,6 +22,8 @@ class MobileTimetableTest {
         assertEquals(2, result.events.size)
         assertEquals(2, result.events.count { it.from == "00:00" && it.to == "23:59" })
         assertTrue(lessons.flatMap { it.lessons }.any { it.isSubstitution })
+        assertTrue(lessons.flatMap { it.lessons }.any { it.isCancelled })
+        assertEquals(listOf("Bring a workbook", "Example note"), lessons.first().lessons.single().notes)
         val first = lessons.first()
         assertEquals(2, first.periodNumber)
         assertEquals(LocalTime.of(8, 0), first.timeRange.start)

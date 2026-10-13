@@ -11,23 +11,32 @@ class TimetableParserTest {
 
     @Test fun publicSchoolProvidesClassesAndCurrentWeek() {
         val meta = SchoolPageParser.parse(fixture("school.html"), "school-key")
-        assertEquals(251, meta.schoolId)
+        assertEquals(9001, meta.schoolId)
         assertEquals(7, meta.currentWeekId)
-        assertTrue(meta.classes.any { it.id == 810899 && it.label == "E1A" })
+        assertTrue(meta.classes.any { it.id == 101 && it.label == "TEST-A" })
         assertFalse(meta.classes.any { it.label.all(Char::isDigit) })
         assertTrue(meta.allWeekIds!!.contains(7))
     }
 
     @Test fun printableHtmlContainsDatesLessonsAndTimes() {
-        val week = TimetableParser.parse(810899, fixture("timetable-print.html"))
+        val week = TimetableParser.parse(101, fixture("timetable-print.html"))
         assertEquals(LocalDate.of(2026, 10, 12), week.weekStart)
         assertEquals(LocalDate.of(2026, 10, 18), week.weekEnd)
         assertEquals(5, week.days.size)
         val first = week.days.first().lessonsByPeriod.first() as PeriodCell.WithLessons
         assertEquals(LocalTime.of(7, 10), first.timeRange.start)
-        assertEquals("ITP", first.lessons.first().subjectCode)
-        assertEquals("D3.1", first.lessons.first().room)
-        assertEquals(first.lessons.distinct(), first.lessons)
+        assertEquals("SYN", first.lessons.first().subjectCode)
+        assertEquals("TEST-R1", first.lessons.first().room)
+        assertEquals(3, week.days.first().lessonsByPeriod.size)
+        assertEquals(1, first.lessons.size) // Visible/hidden copies are deduplicated.
+        assertEquals("Morgan Example", first.lessons.single().teacherFullName)
+        val split = week.days.first().lessonsByPeriod[1] as PeriodCell.WithLessons
+        assertEquals(listOf("Group One", "Group Two"), split.lessons.map { it.groupLabel })
+        val cancelled = week.days.first().lessonsByPeriod[2] as PeriodCell.WithLessons
+        assertTrue(cancelled.lessons.single().isCancelled)
+        val tagged = week.days[1].lessonsByPeriod.first() as PeriodCell.WithLessons
+        assertTrue(tagged.lessons.single().isCancelled)
+        assertTrue(week.days.last().lessonsByPeriod.all { it is PeriodCell.Empty })
     }
 
     @Test fun legacyAjaxStillParses() {

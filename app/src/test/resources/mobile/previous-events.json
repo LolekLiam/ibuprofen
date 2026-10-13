@@ -1,0 +1,50 @@
+{
+  "schedule": [
+    {
+      "name": "1. period",
+      "short_name": "1",
+      "from": "07:10",
+      "to": "07:55"
+    },
+    {
+      "name": "2. period",
+      "short_name": "2",
+      "from": "08:00",
+      "to": "08:45"
+    },
+    {
+      "name": "3. period",
+      "short_name": "3",
+      "from": "08:50",
+      "to": "09:35"
+    }
+  ],
+  "events": [
+    {
+      "slug": "synthetic-previous-week",
+      "type": "school_hour",
+      "date": "2026-10-05",
+      "from": "08:00",
+      "to": "08:45",
+      "title": "Synthetic Systems",
+      "title_short": "SYN",
+      "teachers": [
+        "Morgan Example"
+      ],
+      "subject": {
+        "subject_id": 501,
+        "title": "Synthetic Systems",
+        "title_short": "SYN"
+      },
+      "classroom": "TEST-R1",
+      "notes": [],
+      "schedule_index": [
+        1
+      ],
+      "is_substitution": false,
+      "is_cancelled": false,
+      "type_label": null,
+      "description": "Invented event for an offline test"
+    }
+  ]
+}

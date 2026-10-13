@@ -53,7 +53,7 @@ class MobileApiTest {
             .addConverterFactory(GsonConverterFactory.create()).build().create(AuthApi::class.java)
     }
 
-    @Test fun loginChildrenScheduleAndGradesMatchCapturedProtocol() = runBlocking {
+    @Test fun syntheticLoginChildrenScheduleAndGradesMatchProtocol() = runBlocking {
         val requests = ConcurrentLinkedQueue<Request>(); val store = MemoryStore(); val repo = AuthRepository(api(requests), store)
         val session = repo.login("example", "test-password")
         assertEquals(777, session.schoolId)
@@ -124,7 +124,7 @@ class MobileApiTest {
         assertEquals("test-device", requests.last().url.queryParameter("device_id"))
     }
 
-    @Test fun expirationSupportsCapturedTimezoneFormatAndSafetyWindow() {
+    @Test fun expirationSupportsTimezoneFormatAndSafetyWindow() {
         val now = Instant.parse("2026-10-13T12:00:00Z")
         assertFalse(TokenExpiry.needsRefresh("2026-10-13T14:02:00+0200", now))
         assertTrue(TokenExpiry.needsRefresh("2026-10-13T14:00:30+0200", now))

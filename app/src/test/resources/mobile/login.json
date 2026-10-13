@@ -1,0 +1,15 @@
+{
+  "access_token": {
+    "token": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzY2hvb2xJZCI6Ijc3NyIsInVzZXJJZCI6IjE1Iiwic2Vzc2lvbklkIjoic3ludGhldGljLXNlc3Npb24ifQ.fixture-not-a-signature",
+    "expiration_date": "2099-01-01T00:00:00+0000"
+  },
+  "refresh_token": "synthetic-refresh-token-not-valid",
+  "user": {
+    "id": 15,
+    "language": "en",
+    "username": "fixture-student",
+    "name": "Example Student",
+    "type": "child"
+  },
+  "redirect": null
+}

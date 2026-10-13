@@ -1,0 +1,143 @@
+{
+  "schedule": [
+    {
+      "name": "1. period",
+      "short_name": "1",
+      "from": "07:10",
+      "to": "07:55"
+    },
+    {
+      "name": "2. period",
+      "short_name": "2",
+      "from": "08:00",
+      "to": "08:45"
+    },
+    {
+      "name": "3. period",
+      "short_name": "3",
+      "from": "08:50",
+      "to": "09:35"
+    }
+  ],
+  "events": [
+    {
+      "slug": "synthetic-monday",
+      "type": "school_hour",
+      "date": "2026-10-12",
+      "from": "08:00",
+      "to": "08:45",
+      "title": "Synthetic Systems",
+      "title_short": "SYN",
+      "teachers": [
+        "Morgan Example"
+      ],
+      "subject": {
+        "subject_id": 501,
+        "title": "Synthetic Systems",
+        "title_short": "SYN"
+      },
+      "classroom": "TEST-R1",
+      "notes": [
+        "Bring a workbook",
+        {
+          "text": "Example note"
+        }
+      ],
+      "schedule_index": [
+        1
+      ],
+      "is_substitution": false,
+      "is_cancelled": false,
+      "type_label": null,
+      "description": "Invented event for an offline test"
+    },
+    {
+      "slug": "synthetic-tuesday",
+      "type": "substitution",
+      "date": "2026-10-13",
+      "from": "08:50",
+      "to": "09:35",
+      "title": "Synthetic Systems",
+      "title_short": "SYN",
+      "teachers": [
+        "Morgan Example"
+      ],
+      "subject": {
+        "subject_id": 501,
+        "title": "Synthetic Systems",
+        "title_short": "SYN"
+      },
+      "classroom": "TEST-R1",
+      "notes": [],
+      "schedule_index": [
+        2
+      ],
+      "is_substitution": true,
+      "is_cancelled": false,
+      "type_label": "Example substitution",
+      "description": "Invented event for an offline test"
+    },
+    {
+      "slug": "synthetic-cancelled",
+      "type": "school_hour",
+      "date": "2026-10-14",
+      "from": "08:00",
+      "to": "08:45",
+      "title": "Synthetic Systems",
+      "title_short": "SYN",
+      "teachers": [
+        "Morgan Example"
+      ],
+      "subject": {
+        "subject_id": 501,
+        "title": "Synthetic Systems",
+        "title_short": "SYN"
+      },
+      "classroom": "TEST-R1",
+      "notes": [],
+      "schedule_index": [
+        1
+      ],
+      "is_substitution": false,
+      "is_cancelled": true,
+      "type_label": null,
+      "description": "Invented event for an offline test"
+    },
+    {
+      "slug": "synthetic-day-event-one",
+      "type": "school_event",
+      "date": "2026-10-15",
+      "from": "00:00",
+      "to": "23:59",
+      "title": "Example school event",
+      "title_short": "SYN",
+      "teachers": [],
+      "subject": null,
+      "classroom": null,
+      "notes": [],
+      "schedule_index": [],
+      "is_substitution": false,
+      "is_cancelled": false,
+      "type_label": null,
+      "description": "Invented event for an offline test"
+    },
+    {
+      "slug": "synthetic-day-event-two",
+      "type": "school_event",
+      "date": "2026-10-16",
+      "from": "00:00",
+      "to": "23:59",
+      "title": "Example school event",
+      "title_short": "SYN",
+      "teachers": [],
+      "subject": null,
+      "classroom": null,
+      "notes": [],
+      "schedule_index": [],
+      "is_substitution": false,
+      "is_cancelled": false,
+      "type_label": null,
+      "description": "Invented event for an offline test"
+    }
+  ]
+}

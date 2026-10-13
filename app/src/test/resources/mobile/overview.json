@@ -1,0 +1,14 @@
+{
+  "latest_grades": [
+    {
+      "id": 601,
+      "value": "4",
+      "date": "2026-10-09",
+      "comment": "Example assessment",
+      "type_name": "Written assessment",
+      "subject_id": 501,
+      "subject_name": "Synthetic Systems",
+      "subject_short_name": "SYN"
+    }
+  ]
+}

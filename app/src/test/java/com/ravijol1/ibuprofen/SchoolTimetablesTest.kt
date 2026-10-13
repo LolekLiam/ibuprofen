@@ -16,7 +16,7 @@ class SchoolTimetablesTest {
             classroomId: Int, weekId: Int, extracurriculars: Int): Response<String> {
             assertEquals("school-key", schoolId)
             if (cancel) throw CancellationException("Cancelled")
-            return if (classId == 810899) Response.success(fixture("timetable-print.html"))
+            return if (classId == 101) Response.success(fixture("timetable-print.html"))
                 else Response.error(503, "Service unavailable".toResponseBody())
         }
 
@@ -27,21 +27,21 @@ class SchoolTimetablesTest {
         val school = repo.loadSchoolMeta("school-key", useProxy = false)
         val progress = mutableListOf<Pair<Int, Int>>()
         val result = repo.loadSchoolTimetables(school.schoolId,
-            listOf(ClassInfo(810899, "E1A"), ClassInfo(810907, "E1B")), 7) { done, total -> progress.add(done to total) }
+            listOf(ClassInfo(101, "TEST-A"), ClassInfo(102, "TEST-B")), 7) { done, total -> progress.add(done to total) }
         assertEquals(1, result.weeks.size)
-        assertEquals(listOf(ClassInfo(810907, "E1B")), result.failedClasses)
+        assertEquals(listOf(ClassInfo(102, "TEST-B")), result.failedClasses)
         assertEquals(listOf(1 to 2, 2 to 2), progress)
         val lessons = result.weeks.single().days.flatMap { it.lessonsByPeriod }
             .filterIsInstance<PeriodCell.WithLessons>().flatMap { it.lessons }
         assertTrue(lessons.isNotEmpty())
-        assertTrue(lessons.all { it.sourceClassLabel == "E1A" })
+        assertTrue(lessons.all { it.sourceClassLabel == "TEST-A" })
     }
 
     @Test(expected = CancellationException::class)
     fun cancelledLoadingDoesNotBecomeAMissingClass() = runBlocking {
         val repo = TimetableRepository(api(cancel = true))
         val school = repo.loadSchoolMeta("school-key", useProxy = false)
-        repo.loadSchoolTimetables(school.schoolId, listOf(ClassInfo(810899, "E1A")), 7)
+        repo.loadSchoolTimetables(school.schoolId, listOf(ClassInfo(101, "TEST-A")), 7)
         Unit
     }
 }
