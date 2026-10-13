@@ -23,7 +23,7 @@ The APK is generated in `app/build/outputs/apk/debug/`. The proxy is optional; s
 
 # License
 
-[MIT](LICENSE).
+[AGPL-3.0](LICENSE).
 
 # Credits
 [@MaticBabnik](https://github.com/MaticBabnik) za [easistent-tt](https://github.com/MaticBabnik/easistent-tt)
