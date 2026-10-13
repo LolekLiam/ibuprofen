@@ -19,6 +19,7 @@ object SchoolPageParser {
 
         val classes = doc.select("#id_parameter > option").mapNotNull { opt ->
             val id = opt.attr("value").toIntOrNull() ?: return@mapNotNull null
+            if (id <= 0 || opt.parents().any { it.tagName() == "optgroup" }) return@mapNotNull null
             ClassInfo(id = id, label = opt.text().trim())
         }
 
@@ -33,7 +34,8 @@ object SchoolPageParser {
             classes = classes,
             schoolName = schoolName,
             currentWeekId = currentWeekId,
-            currentWeekLabel = currentWeekLabel
+            currentWeekLabel = currentWeekLabel,
+            allWeekIds = doc.select("[data-teden]").mapNotNull { it.attr("data-teden").toIntOrNull() }.distinct()
         )
     }
 }
@@ -51,20 +53,32 @@ object TimetableParser {
 
     fun parse(classId: Int, payload: String): TimetableWeek {
         val parts = payload.split(US)
-        require(parts.size >= 4) { "Unexpected payload format: parts=${parts.size}" }
-        val weekStart = LocalDate.parse(parts[1].trim(), dateFull)
-        val weekEnd = LocalDate.parse(parts[2].trim(), dateFull)
-        val html = parts[3]
-
-        val doc = Jsoup.parseBodyFragment(html)
-        val table = doc.selectFirst("table.ednevnik-seznam_ur_teden") ?: return TimetableWeek(classId, weekStart, weekEnd, emptyList())
+        val html = if (parts.size >= 4) parts[3] else payload
+        val doc = Jsoup.parse(html)
+        val table = doc.selectFirst("table.ednevnik-seznam_ur_teden")
+            ?: error("Timetable missing. The school may require sign-in or the service format changed.")
+        val embeddedDate = Regex("\\d{4}-\\d{2}-\\d{2}").find(table.select("[id]").joinToString { it.id() })
+            ?.value?.let(LocalDate::parse)
+        val anchor = embeddedDate ?: LocalDate.now()
+        val headerDates = table.select("thead > tr > th .date").map { it.text() }
+        val firstDate = headerDates.firstOrNull()?.let { text ->
+            val values = Regex("(\\d+)\\.\\s*(\\d+)\\.").find(text)
+                ?: error("Invalid timetable date")
+            val day = values.groupValues[1].toInt()
+            val month = values.groupValues[2].toInt()
+            (anchor.year - 1..anchor.year + 1).mapNotNull { year ->
+                runCatching { LocalDate.of(year, month, day) }.getOrNull()
+            }.minBy { kotlin.math.abs(java.time.temporal.ChronoUnit.DAYS.between(anchor, it)) }
+        } ?: error("Timetable dates missing")
+        val weekStart = if (parts.size >= 4) LocalDate.parse(parts[1].trim(), dateFull) else firstDate
+        val weekEnd = if (parts.size >= 4) LocalDate.parse(parts[2].trim(), dateFull) else weekStart.plusDays(6)
 
         // Days headers
-        val headers = table.select("thead th").drop(1)
+        val headers = table.select("thead > tr > th").drop(1)
         val dayDates: List<LocalDate> = headers.map { th ->
             val shortDate = th.selectFirst(".date")?.text()?.trim().orEmpty()
             val clean = shortDate.removeSuffix(".").trim()
-            val dm = clean.split(". ").filter { it.isNotBlank() }
+            val dm = clean.split(Regex("\\.\\s*")).filter { it.isNotBlank() }
             val d = dm.getOrNull(0)?.toIntOrNull()
             val m = dm.getOrNull(1)?.toIntOrNull()
             val year = inferYearForDay(weekStart, weekEnd, d, m)
@@ -93,7 +107,7 @@ object TimetableParser {
             }
 
             val perDay = mutableListOf<PeriodCell>()
-            for (dIdx in 1..5) {
+            for (dIdx in 1..dayDates.size) {
                 val cell = tds.getOrNull(dIdx)
                 if (cell == null) { perDay += PeriodCell.Empty; continue }
                 val isCancelledCell = cell.hasClass("ednevnik-seznam_ur_teden-td-odpadla-ura")
@@ -137,7 +151,7 @@ object TimetableParser {
     }
 
     private fun parseLesson(block: Element, isCancelledCell: Boolean): Lesson? {
-        val titleSpan = block.selectFirst(".ednevnik-title span")
+        val titleSpan = block.selectFirst(".ednevnik-title span") ?: block.selectFirst(".ednevnik-title")
         val subjectCode = titleSpan?.text()?.trim()?.ifBlank { null }
         val subjectTitle = titleSpan?.attr("title")?.trim()?.ifBlank { null }
 
@@ -148,7 +162,7 @@ object TimetableParser {
         val group = subtitles.drop(1).joinToString(" | ") { it.text().trim() }.ifBlank { null }
 
         val teacher = teacherRoom?.substringBefore(',')?.trim()?.ifBlank { null }
-        val room = teacherRoom?.substringAfter(',')?.trim()?.ifBlank { null }
+        val room = teacherRoom?.substringAfter(',', "")?.trim()?.ifBlank { null }
 
         val cancelled = isCancelledCell || block.selectFirst(".wl-tag-cancelled") != null
 

@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "uuid": "child_uuid_15_2026_777_88_99",
+      "avatar": null,
+      "gender": "m",
+      "short_name": "E. Student",
+      "display_name": "Example Student",
+      "age": 17,
+      "class_name": "1A",
+      "school_name": "Example School",
+      "school_year": "2026/27",
+      "enroll_status": "enrolled",
+      "identity_status": "me",
+      "plus_enabled": false,
+      "paywall": {
+        "status": "min",
+        "content": "Paket ZA U\u010cENCE ali POPOLNI omogo\u010da poln vpogled v ocene, ocenjevanj znanja in tvoje ostale \u0161olske aktivnosti."
+      },
+      "trial_available": false,
+      "trial_available_days": 0,
+      "did_try_plus": false
+    }
+  ]
+}

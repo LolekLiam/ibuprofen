@@ -22,31 +22,12 @@ class ReminderWorker(
 
     override suspend fun doWork(): Result {
         val appCtx = applicationContext
-        val tokenStore = TokenStore(appCtx)
         val settings = SettingsStore(appCtx)
-        val session = tokenStore.accessToken
-        val schoolId = tokenStore.schoolId
-        val studentId = settings.selectedChildStudentId
-        val classId = settings.selectedChildClassId ?: 0
-        if (session.isNullOrBlank() || schoolId == null || studentId == null) {
-            // Nothing to do; cancel chain
-            return Result.success()
-        }
-
-        val repo = NetworkProvider.repository
-        val access = session
-        // Always use current week (0) to remain aligned without extra logic
-        val weekId = 0
         val week = try {
-            repo.loadChildTimetableWeek(
-                accessToken = access,
-                schoolId = schoolId,
-                studentId = studentId,
-                weekId = weekId,
-                classId = classId
-            )
-        } catch (t: Throwable) {
-            // Soft-fail and retry in 30 minutes
+            mobileReminderWeek(appCtx) ?: return Result.success()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (_: Exception) {
             schedulePlannerWork(appCtx, Duration.ofMinutes(30))
             return Result.success()
         }
@@ -59,6 +40,8 @@ class ReminderWorker(
             val d: LocalDate = day.date
             day.lessonsByPeriod.forEach { cell ->
                 if (cell is PeriodCell.WithLessons) {
+                    val activeLessons = cell.lessons.filterNot { it.isCancelled }
+                    if (activeLessons.isEmpty()) return@forEach
                     val s: LocalTime = cell.timeRange.start
                     val e: LocalTime = cell.timeRange.endInclusive
                     val valid = !(s == LocalTime.MIDNIGHT && e == LocalTime.MIDNIGHT)
@@ -66,8 +49,8 @@ class ReminderWorker(
                     val startDT = LocalDateTime.of(d, s)
                     if (startDT.isAfter(now)) {
                         // Collect lesson info
-                        val subjects = cell.lessons.mapNotNull { it.subjectCode ?: it.subjectTitle }.filter { it.isNotBlank() }
-                        val rooms = cell.lessons.mapNotNull { it.room }.filter { it.isNotBlank() }
+                        val subjects = activeLessons.mapNotNull { it.subjectCode ?: it.subjectTitle }.filter { it.isNotBlank() }
+                        val rooms = activeLessons.mapNotNull { it.room }.filter { it.isNotBlank() }
                         upcoming += Slot(startDT, subjects.ifEmpty { listOf("Ura") }, rooms)
                     }
                 }

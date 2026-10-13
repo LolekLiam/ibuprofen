@@ -1,6 +1,9 @@
 package com.ravijol1.ibuprofen.ui.theme
 
-import android.app.Activity
+import androidx.compose.material3.Shapes
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -12,15 +15,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color(0xFFAAC7FF),
+    secondary = Color(0xFFBFC6DC),
+    tertiary = Color(0xFFA8D1C4)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Color(0xFF365E9D),
+    secondary = Color(0xFF565F73),
+    tertiary = Color(0xFF3B6659)
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -53,6 +56,7 @@ fun IbuprofenTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes(small = RoundedCornerShape(12.dp), medium = RoundedCornerShape(20.dp), large = RoundedCornerShape(28.dp)),
         content = content
     )
 }

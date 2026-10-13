@@ -1,0 +1,785 @@
+{
+  "schedule": [
+    {
+      "name": "Pred poukom",
+      "short_name": "PRE",
+      "from": "00:00",
+      "to": "07:10"
+    },
+    {
+      "name": "1. ura",
+      "short_name": "1",
+      "from": "07:10",
+      "to": "07:55"
+    },
+    {
+      "name": "2. ura",
+      "short_name": "2",
+      "from": "08:00",
+      "to": "08:45"
+    },
+    {
+      "name": "3. ura",
+      "short_name": "3",
+      "from": "08:50",
+      "to": "09:35"
+    },
+    {
+      "name": "4. ura",
+      "short_name": "4",
+      "from": "09:40",
+      "to": "10:25"
+    },
+    {
+      "name": "5. ura",
+      "short_name": "5",
+      "from": "10:30",
+      "to": "11:15"
+    },
+    {
+      "name": "6. ura",
+      "short_name": "6",
+      "from": "11:20",
+      "to": "12:05"
+    },
+    {
+      "name": "7. ura",
+      "short_name": "7",
+      "from": "12:10",
+      "to": "12:55"
+    },
+    {
+      "name": "8. ura",
+      "short_name": "8",
+      "from": "13:00",
+      "to": "13:45"
+    },
+    {
+      "name": "9. ura",
+      "short_name": "9",
+      "from": "13:50",
+      "to": "14:35"
+    },
+    {
+      "name": "Po pouku",
+      "short_name": "PO",
+      "from": "14:35",
+      "to": "23:59"
+    }
+  ],
+  "events": [
+    {
+      "slug": "event-0",
+      "type": "school_hour",
+      "date": "2026-10-05",
+      "from": "08:00",
+      "to": "08:45",
+      "color": "#403f9c",
+      "title": "Example lesson 0",
+      "title_short": "S0",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 1,
+        "title_short": "S0",
+        "title": "Example subject 0",
+        "color": "#403f9c"
+      },
+      "classroom": "EK.4",
+      "notes": [],
+      "schedule_index": [
+        2
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-1",
+      "type": "school_hour",
+      "date": "2026-10-05",
+      "from": "08:50",
+      "to": "09:35",
+      "color": "#3ea997",
+      "title": "Example lesson 1",
+      "title_short": "S1",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 2,
+        "title_short": "S1",
+        "title": "Example subject 1",
+        "color": "#3ea997"
+      },
+      "classroom": "C2.5",
+      "notes": [],
+      "schedule_index": [
+        3
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-2",
+      "type": "school_hour",
+      "date": "2026-10-05",
+      "from": "10:30",
+      "to": "11:15",
+      "color": "#9847b2",
+      "title": "Example lesson 2",
+      "title_short": "S2",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 3,
+        "title_short": "S2",
+        "title": "Example subject 2",
+        "color": "#9847b2"
+      },
+      "classroom": "CP.5",
+      "notes": [],
+      "schedule_index": [
+        5
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-3",
+      "type": "school_hour",
+      "date": "2026-10-05",
+      "from": "11:20",
+      "to": "12:05",
+      "color": "#7fa837",
+      "title": "Example lesson 3",
+      "title_short": "S3",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 4,
+        "title_short": "S3",
+        "title": "Example subject 3",
+        "color": "#7fa837"
+      },
+      "classroom": "D3.1",
+      "notes": [],
+      "schedule_index": [
+        6
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-4",
+      "type": "school_hour",
+      "date": "2026-10-05",
+      "from": "12:10",
+      "to": "12:55",
+      "color": "#aa4048",
+      "title": "Example lesson 4",
+      "title_short": "S4",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 5,
+        "title_short": "S4",
+        "title": "Example subject 4",
+        "color": "#aa4048"
+      },
+      "classroom": "E2.6",
+      "notes": [],
+      "schedule_index": [
+        7
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-5",
+      "type": "school_hour",
+      "date": "2026-10-06",
+      "from": "07:10",
+      "to": "07:55",
+      "color": "#b78e33",
+      "title": "Example lesson 5",
+      "title_short": "S5",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 6,
+        "title_short": "S5",
+        "title": "Example subject 5",
+        "color": "#b78e33"
+      },
+      "classroom": "F3.2",
+      "notes": [],
+      "schedule_index": [
+        1
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-6",
+      "type": "school_hour",
+      "date": "2026-10-06",
+      "from": "08:00",
+      "to": "08:45",
+      "color": "#b78e33",
+      "title": "Example lesson 6",
+      "title_short": "S6",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 7,
+        "title_short": "S6",
+        "title": "Example subject 6",
+        "color": "#b78e33"
+      },
+      "classroom": "F3.6",
+      "notes": [],
+      "schedule_index": [
+        2
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-7",
+      "type": "school_hour",
+      "date": "2026-10-06",
+      "from": "08:50",
+      "to": "09:35",
+      "color": "#9c3346",
+      "title": "Example lesson 7",
+      "title_short": "S7",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 8,
+        "title_short": "S7",
+        "title": "Example subject 7",
+        "color": "#9c3346"
+      },
+      "classroom": "D2.3",
+      "notes": [],
+      "schedule_index": [
+        3
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-8",
+      "type": "school_hour",
+      "date": "2026-10-06",
+      "from": "09:40",
+      "to": "10:25",
+      "color": "#9c3346",
+      "title": "Example lesson 8",
+      "title_short": "S8",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 9,
+        "title_short": "S8",
+        "title": "Example subject 8",
+        "color": "#9c3346"
+      },
+      "classroom": "D2.3",
+      "notes": [],
+      "schedule_index": [
+        4
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-9",
+      "type": "school_hour",
+      "date": "2026-10-06",
+      "from": "10:30",
+      "to": "11:15",
+      "color": "#ba518e",
+      "title": "Example lesson 9",
+      "title_short": "S9",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 10,
+        "title_short": "S9",
+        "title": "Example subject 9",
+        "color": "#ba518e"
+      },
+      "classroom": "TV2",
+      "notes": [],
+      "schedule_index": [
+        5
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-10",
+      "type": "school_hour",
+      "date": "2026-10-06",
+      "from": "12:10",
+      "to": "12:55",
+      "color": "#5fca4c",
+      "title": "Example lesson 10",
+      "title_short": "S10",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 11,
+        "title_short": "S10",
+        "title": "Example subject 10",
+        "color": "#5fca4c"
+      },
+      "classroom": "CP.2",
+      "notes": [],
+      "schedule_index": [
+        7
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-11",
+      "type": "school_hour",
+      "date": "2026-10-07",
+      "from": "07:10",
+      "to": "07:55",
+      "color": "#aa4048",
+      "title": "Example lesson 11",
+      "title_short": "S11",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 12,
+        "title_short": "S11",
+        "title": "Example subject 11",
+        "color": "#aa4048"
+      },
+      "classroom": "E2.6",
+      "notes": [],
+      "schedule_index": [
+        1
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-12",
+      "type": "school_hour",
+      "date": "2026-10-07",
+      "from": "08:00",
+      "to": "08:45",
+      "color": "#aa4048",
+      "title": "Example lesson 12",
+      "title_short": "S12",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 13,
+        "title_short": "S12",
+        "title": "Example subject 12",
+        "color": "#aa4048"
+      },
+      "classroom": "E2.6",
+      "notes": [],
+      "schedule_index": [
+        2
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-13",
+      "type": "school_hour",
+      "date": "2026-10-07",
+      "from": "08:50",
+      "to": "09:35",
+      "color": "#9847b2",
+      "title": "Example lesson 13",
+      "title_short": "S13",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 14,
+        "title_short": "S13",
+        "title": "Example subject 13",
+        "color": "#9847b2"
+      },
+      "classroom": "E2.6",
+      "notes": [],
+      "schedule_index": [
+        3
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-14",
+      "type": "school_hour",
+      "date": "2026-10-07",
+      "from": "09:40",
+      "to": "10:25",
+      "color": "#b78e33",
+      "title": "Example lesson 14",
+      "title_short": "S14",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 15,
+        "title_short": "S14",
+        "title": "Example subject 14",
+        "color": "#b78e33"
+      },
+      "classroom": "F3.7",
+      "notes": [],
+      "schedule_index": [
+        4
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-15",
+      "type": "event",
+      "date": "2026-10-07",
+      "from": "11:20",
+      "to": "12:05",
+      "color": "#009dff",
+      "title": "Example lesson 15",
+      "title_short": "S15",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "type_labels": [
+        {
+          "type_label": "NADOME\u0160\u010cANJE",
+          "type_label_short": "N"
+        }
+      ],
+      "type_label": "NADOME\u0160\u010cANJE",
+      "subject": {
+        "subject_id": 16,
+        "title_short": "S15",
+        "title": "Example subject 15",
+        "color": "#3ea997"
+      },
+      "classroom": "CP.5",
+      "is_substitution": true,
+      "original_subject": "Example original subject",
+      "notes": [],
+      "schedule_index": [
+        6
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-16",
+      "type": "school_hour",
+      "date": "2026-10-07",
+      "from": "12:10",
+      "to": "12:55",
+      "color": "#3eaeac",
+      "title": "Example lesson 16",
+      "title_short": "S16",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 17,
+        "title_short": "S16",
+        "title": "Example subject 16",
+        "color": "#3eaeac"
+      },
+      "classroom": "D2.4",
+      "notes": [],
+      "schedule_index": [
+        7
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-17",
+      "type": "school_hour",
+      "date": "2026-10-07",
+      "from": "13:00",
+      "to": "13:45",
+      "color": "#4568c1",
+      "title": "Example lesson 17",
+      "title_short": "S17",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 18,
+        "title_short": "S17",
+        "title": "Example subject 17",
+        "color": "#4568c1"
+      },
+      "classroom": "D2.4",
+      "notes": [],
+      "schedule_index": [
+        8
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-18",
+      "type": "school_hour",
+      "date": "2026-10-08",
+      "from": "07:10",
+      "to": "07:55",
+      "color": "#ba518e",
+      "title": "Example lesson 18",
+      "title_short": "S18",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 19,
+        "title_short": "S18",
+        "title": "Example subject 18",
+        "color": "#ba518e"
+      },
+      "classroom": "TV9",
+      "notes": [],
+      "schedule_index": [
+        1
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-19",
+      "type": "school_hour",
+      "date": "2026-10-08",
+      "from": "08:00",
+      "to": "08:45",
+      "color": "#ba518e",
+      "title": "Example lesson 19",
+      "title_short": "S19",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 20,
+        "title_short": "S19",
+        "title": "Example subject 19",
+        "color": "#ba518e"
+      },
+      "classroom": "TV3",
+      "notes": [],
+      "schedule_index": [
+        2
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-20",
+      "type": "school_hour",
+      "date": "2026-10-08",
+      "from": "08:50",
+      "to": "09:35",
+      "color": "#aa4048",
+      "title": "Example lesson 20",
+      "title_short": "S20",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 21,
+        "title_short": "S20",
+        "title": "Example subject 20",
+        "color": "#aa4048"
+      },
+      "classroom": "E2.6",
+      "notes": [],
+      "schedule_index": [
+        3
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-21",
+      "type": "school_hour",
+      "date": "2026-10-08",
+      "from": "09:40",
+      "to": "10:25",
+      "color": "#3241a4",
+      "title": "Example lesson 21",
+      "title_short": "S21",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 22,
+        "title_short": "S21",
+        "title": "Example subject 21",
+        "color": "#3241a4"
+      },
+      "classroom": "B1.12",
+      "notes": [],
+      "schedule_index": [
+        4
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-22",
+      "type": "school_hour",
+      "date": "2026-10-08",
+      "from": "10:30",
+      "to": "11:15",
+      "color": "#5fca4c",
+      "title": "Example lesson 22",
+      "title_short": "S22",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "subject": {
+        "subject_id": 23,
+        "title_short": "S22",
+        "title": "Example subject 22",
+        "color": "#5fca4c"
+      },
+      "classroom": "CP.2",
+      "notes": [],
+      "schedule_index": [
+        5
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-23",
+      "type": "event",
+      "date": "2026-10-08",
+      "from": "11:20",
+      "to": "12:05",
+      "color": "#009dff",
+      "title": "Example lesson 23",
+      "title_short": "S23",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "type_labels": [
+        {
+          "type_label": "NADOME\u0160\u010cANJE",
+          "type_label_short": "N"
+        }
+      ],
+      "type_label": "NADOME\u0160\u010cANJE",
+      "subject": {
+        "subject_id": 24,
+        "title_short": "S23",
+        "title": "Example subject 23",
+        "color": "#b78e33"
+      },
+      "classroom": "E2.4",
+      "is_substitution": true,
+      "original_subject": "Example original subject",
+      "notes": [],
+      "schedule_index": [
+        6
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-24",
+      "type": "event",
+      "date": "2026-10-08",
+      "from": "12:10",
+      "to": "12:55",
+      "color": "#009dff",
+      "title": "Example lesson 24",
+      "title_short": "S24",
+      "teachers": [
+        "Example Teacher"
+      ],
+      "type_labels": [
+        {
+          "type_label": "NADOME\u0160\u010cANJE",
+          "type_label_short": "N"
+        }
+      ],
+      "type_label": "NADOME\u0160\u010cANJE",
+      "subject": {
+        "subject_id": 25,
+        "title_short": "S24",
+        "title": "Example subject 24",
+        "color": "#9847b2"
+      },
+      "classroom": "E2.4",
+      "is_substitution": true,
+      "original_subject": "Example original subject",
+      "notes": [],
+      "schedule_index": [
+        7
+      ],
+      "description": null,
+      "background_image": null
+    },
+    {
+      "slug": "event-25",
+      "type": "event",
+      "date": "2026-10-09",
+      "from": "00:00",
+      "to": "23:59",
+      "color": "#ffc400",
+      "title": "Example lesson 25",
+      "title_short": "S25",
+      "teachers": [],
+      "type_labels": [
+        {
+          "type_label": "DOGODEK",
+          "type_label_short": "D"
+        }
+      ],
+      "type_label": "DOGODEK",
+      "is_important": true,
+      "notes": [],
+      "text_color": "#000000",
+      "background_image": null,
+      "schedule_index": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "description": null
+    }
+  ]
+}

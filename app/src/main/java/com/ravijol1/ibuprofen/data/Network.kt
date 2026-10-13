@@ -12,6 +12,15 @@ object NetworkProvider {
             .build()
     }
 
+    private val proxyOkHttp: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .followRedirects(true)
+            .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+    }
+
     val api: EAsistentApi by lazy {
         Retrofit.Builder()
             .baseUrl("https://urniki.easistent.com/")
@@ -23,23 +32,45 @@ object NetworkProvider {
 
     val repository: TimetableRepository by lazy { TimetableRepository(api) }
 
+    fun getProxyApi(baseUrl: String): IbuprofenProxyApi? {
+        if (baseUrl.isBlank()) return null
+        var url = baseUrl.trim()
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "https://$url"
+        }
+        if (!url.endsWith("/")) url = "$url/"
+        return try {
+            Retrofit.Builder()
+                .baseUrl(url)
+                .client(proxyOkHttp)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(IbuprofenProxyApi::class.java)
+        } catch (e: Exception) {
+            // Catches IllegalArgumentException for invalid URLs
+            println("[DEBUG_LOG] NetworkProvider: Failed to create proxy API for $url: ${e.message}")
+            null
+        }
+    }
+
+    fun adminServerUrl(input: String): String {
+        val value = input.trim().let { if (it.contains("://")) it else "https://$it" }
+        val uri = java.net.URI(value)
+        require(uri.host != null && uri.rawUserInfo == null && uri.rawQuery == null && uri.rawFragment == null) { "Enter a server URL without credentials, query parameters, or fragments." }
+        require(uri.scheme == "https" || uri.scheme == "http") { "Enter an HTTP or HTTPS server URL." }
+        return value.trimEnd('/') + "/"
+    }
+
+    fun getAdminApi(baseUrl: String): ProxyAdminApi = Retrofit.Builder()
+        .baseUrl(adminServerUrl(baseUrl))
+        .client(OkHttpClient.Builder().followRedirects(false).followSslRedirects(false).callTimeout(30, java.util.concurrent.TimeUnit.SECONDS).build())
+        .addConverterFactory(GsonConverterFactory.create()).build().create(ProxyAdminApi::class.java)
+
     // Separate OkHttp client for auth with required headers
     private val authOkHttp: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .followRedirects(true)
-            .addInterceptor { chain ->
-                val original = chain.request()
-                val builder = original.newBuilder()
-                    .header("X-App-Name", "child")
-                    .header("Accept", "application/json")
-                    .header("Content-Type", "application/json; charset=utf-8")
-                    .header("X-Device-Id", "child_device")
-                    .header("X-Requested-With", "XMLHttpRequest")
-                    .header("X-client-version", "11102")
-                    .header("x-client-platform", "android")
-                    .header("User-Agent", "ibuprofen/0.4 (Android)")
-                chain.proceed(builder.build())
-            }
+            .addInterceptor(MobileApiInterceptor())
             .build()
     }
 

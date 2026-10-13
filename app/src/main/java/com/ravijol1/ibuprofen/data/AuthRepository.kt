@@ -1,277 +1,146 @@
 package com.ravijol1.ibuprofen.data
 
+import com.google.gson.JsonParser
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import retrofit2.Response
+import java.time.Instant
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
-class AuthRepository(
-    private val api: AuthApi,
-    private val store: TokenStore
-) {
-    // Simple in-memory caches with TTLs (ms)
-    private val paidGradesCache = mutableMapOf<String, Pair<Long, List<SubjectGrades>>>() // key: childUuid
-    private val freeGradesCache = mutableMapOf<String, Pair<Long, List<SubjectGrades>>>() // key: childUuid
-    private val PAID_TTL_MS = 10 * 60 * 1000L
-    private val FREE_TTL_MS = 10 * 60 * 1000L
-    data class Session(
-        val accessToken: String,
-        val refreshToken: String,
-        val userName: String?,
-        val userId: String?,
-        val schoolId: Int?
-    )
+class SessionExpiredException : IllegalStateException("Your session expired. Please sign in again.")
+class MobileApiException(val status: Int, message: String) : IllegalStateException(message)
 
-    private fun extractDevMessage(raw: String?): String? {
-        if (raw.isNullOrBlank()) return null
-        val regex = Regex("\"developer_message\"\\s*:\\s*\"([^\"]+)\"")
-        return regex.find(raw)?.groupValues?.getOrNull(1)
+object TokenExpiry {
+    fun needsRefresh(expiration: String?, now: Instant = Instant.now()): Boolean {
+        if (expiration.isNullOrBlank()) return true
+        val date = sequenceOf(DateTimeFormatter.ISO_OFFSET_DATE_TIME, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"))
+            .mapNotNull { runCatching { OffsetDateTime.parse(expiration, it).toInstant() }.getOrNull() }.firstOrNull()
+            ?: return true
+        return !date.isAfter(now.plusSeconds(60))
     }
+}
+
+class AuthRepository(private val api: AuthApi, private val store: AuthSessionStore) {
+    data class Session(val accessToken: String, val refreshToken: String, val userName: String?,
+        val userId: String?, val schoolId: Int?)
+    companion object { private val refreshMutex = Mutex() }
 
     suspend fun login(username: String, password: String): Session = withContext(Dispatchers.IO) {
-        val res = api.login(LoginRequest(username, password))
-        if (!res.isSuccessful) {
-            val errBody = try { res.errorBody()?.string() } catch (_: Throwable) { null }
-            val dev = extractDevMessage(errBody)
-            error(dev ?: "Login failed: HTTP ${res.code()}")
+        require(username.isNotBlank() && password.isNotEmpty()) { "Enter your username and password." }
+        val body = successful(api.login(LoginRequest(username.trim(), password)))
+        require(!body.accessToken?.token.isNullOrBlank() && !body.refreshToken.isNullOrBlank()) {
+            "The server did not return a mobile session. Additional account verification may be required."
         }
-        val body = res.body() ?: error("Empty login response")
-        val access = body.accessToken.token
-        val accessExp = body.accessToken.expirationDate
-        val refresh = body.refreshToken
-        val payload = JwtUtils.parsePayload(access)
-        val schoolId = payload?.schoolId?.toIntOrNull()
-        val uid = payload?.userId
-        val name = body.user?.name ?: username
-        // persist
-        store.accessToken = access
-        store.accessExpiration = accessExp
+        refreshMutex.withLock {
+            store.clear()
+            saveTokens(body.accessToken, body.refreshToken)
+            store.userName = body.user?.name ?: username.trim()
+            store.userId = body.user?.id?.toString() ?: JwtUtils.parsePayload(body.accessToken.token)?.userId
+        }
+        currentSession() ?: error("Could not save the mobile session.")
+    }
+
+    private fun saveTokens(access: AccessToken, refresh: String) {
+        store.accessToken = access.token
+        store.accessExpiration = access.expirationDate
         store.refreshToken = refresh
-        store.userName = name
-        store.userId = uid
-        if (schoolId != null) store.schoolId = schoolId
-        Session(access, refresh, name, uid, schoolId)
+        JwtUtils.parsePayload(access.token)?.schoolId?.toIntOrNull()?.let { store.schoolId = it }
+    }
+
+    fun currentSession(): Session? {
+        val access = store.accessToken?.takeIf { it.isNotBlank() } ?: return null
+        val refresh = store.refreshToken?.takeIf { it.isNotBlank() && it != "web" } ?: return null
+        return Session(access, refresh, store.userName, store.userId, store.schoolId)
     }
 
     suspend fun refreshIfNeeded(): Boolean = withContext(Dispatchers.IO) {
-        val refresh = store.refreshToken ?: return@withContext false
-        val res = api.refresh(RefreshRequest(refresh))
-        if (!res.isSuccessful) return@withContext false
-        val body = res.body() ?: return@withContext false
-        val access = body.accessToken.token
-        val accessExp = body.accessToken.expirationDate
-        val newRefresh = body.refreshToken
-        val payload = JwtUtils.parsePayload(access)
-        val schoolId = payload?.schoolId?.toIntOrNull()
-        // persist
-        store.accessToken = access
-        store.accessExpiration = accessExp
-        store.refreshToken = newRefresh
-        if (schoolId != null) store.schoolId = schoolId
+        if (currentSession() == null) return@withContext false
+        if (!TokenExpiry.needsRefresh(store.accessExpiration)) return@withContext true
+        refreshAccess(store.accessToken)
+    }
+
+    private suspend fun refreshAccess(failedAccess: String?): Boolean = refreshMutex.withLock {
+        if (store.accessToken != failedAccess && currentSession() != null) return@withLock true
+        val refresh = currentSession()?.refreshToken ?: return@withLock false
+        val response = api.refresh(RefreshRequest(refresh))
+        if (response.code() == 401 || response.code() == 403) {
+            store.clear()
+            return@withLock false
+        }
+        val body = successful(response)
+        check(body.accessToken.token.isNotBlank() && body.refreshToken.isNotBlank()) { "Invalid session refresh response." }
+        saveTokens(body.accessToken, body.refreshToken)
         true
     }
 
     suspend fun logout(): Boolean = withContext(Dispatchers.IO) {
-        val token = store.accessToken
-        val header = token?.let { "Bearer $it" }
-        try {
-            val res = api.logout(authHeader = header)
-            // ignore HTTP result; clear locally regardless
-        } catch (_: Throwable) {
+        refreshMutex.withLock {
+            try {
+                store.accessToken?.let { api.logout(store.deviceId, "Bearer $it") }
+            } catch (e: CancellationException) { throw e
+            } catch (_: Exception) {
+                // Local logout also works when the device is offline.
+            } finally { store.clear() }
         }
-        store.clear()
         true
     }
 
-    fun clearCaches() {
-        paidGradesCache.clear()
-        freeGradesCache.clear()
-    }
-
-    fun currentSession(): Session? {
-        val at = store.accessToken ?: return null
-        return Session(
-            accessToken = at,
-            refreshToken = store.refreshToken ?: return null,
-            userName = store.userName,
-            userId = store.userId,
-            schoolId = store.schoolId
-        )
-    }
-
-    // --- Children ---
-    suspend fun getChildrenProfiles(): List<ChildProfile> = withContext(Dispatchers.IO) {
-        val token = store.accessToken ?: return@withContext emptyList()
-        suspend fun call(bearer: String): retrofit2.Response<ChildrenResponse> {
-            return api.getChildren(authHeader = bearer)
+    private suspend fun <T> authorized(call: suspend (String) -> Response<T>): T = withContext(Dispatchers.IO) {
+        val session = currentSession() ?: throw SessionExpiredException()
+        if (TokenExpiry.needsRefresh(store.accessExpiration) && !refreshAccess(session.accessToken)) throw SessionExpiredException()
+        var access = store.accessToken ?: throw SessionExpiredException()
+        var response = call("Bearer $access")
+        if (response.code() == 401) {
+            if (!refreshAccess(access)) throw SessionExpiredException()
+            access = store.accessToken ?: throw SessionExpiredException()
+            response = call("Bearer $access")
+            if (response.code() == 401) { store.clear(); throw SessionExpiredException() }
         }
-        var bearer = "Bearer $token"
-        var res = call(bearer)
-        if (res.code() == 401 || res.code() == 403) {
-            if (refreshIfNeeded()) {
-                bearer = "Bearer ${store.accessToken}"
-                res = call(bearer)
+        successful(response)
+    }
+
+    suspend fun getChildrenProfiles(): List<ChildProfile> = authorized { api.getChildren(it) }.items.map { it.toProfile() }
+    suspend fun getSchoolWeeks(childUuid: String): List<MobileSchoolWeek> =
+        authorized { api.getSchoolWeeks(it, childUuid) }.items.sortedBy { it.from }
+
+    suspend fun getPersonalSchedule(child: ChildProfile, start: LocalDate, end: LocalDate): PersonalSchedule {
+        val response = authorized { api.getTimetableEvents(it, child.uuid, start.toString(), end.toString()) }
+        return withContext(Dispatchers.Default) { MobileTimetableMapper.map(response, child, start, end) }
+    }
+
+    suspend fun getMobileGrades(childUuid: String): MobileGrades {
+        val overview = authorized { api.getOverview(it, childUuid) }
+        var unavailable = false
+        val summary = try { authorized { api.getConcealedGrades(it, childUuid) } }
+            catch (e: MobileApiException) {
+                if (e.status != 403 && e.status != 404) throw e
+                unavailable = true
+                null
             }
-        }
-        if (!res.isSuccessful) {
-            val code = res.code()
-            if (code == 401 || code == 403) error("Unauthorized")
-            return@withContext emptyList()
-        }
-        val body = res.body() ?: return@withContext emptyList()
-        body.items.mapNotNull { item ->
-            val uuid = item.uuid
-            // Format: prefix$<userId>.<year>.<schoolId>.<classId>.<studentId>
-            val parts = uuid.substringAfter('$', uuid).split('.')
-            val classId = parts.getOrNull(3)?.toIntOrNull()
-            val studentId = parts.getOrNull(4)?.toIntOrNull() ?: return@mapNotNull null
-            ChildProfile(
-                uuid = uuid,
-                studentId = studentId,
-                classId = classId,
-                displayName = item.displayName,
-                className = item.className,
-                schoolName = item.schoolName,
-                subscriptionStatus = item.subscriptionStatus
-            )
-        }
+        return MobileGrades(overview.latestGrades.distinctBy { it.id }.sortedByDescending { it.date }, summary, unavailable)
     }
 
-    // Paid grades fetch; returns empty list on error. Attempts one refresh on 401.
-    suspend fun getGrades(childUuid: String): List<SubjectGrades> = withContext(Dispatchers.IO) {
-        val now = System.currentTimeMillis()
-        paidGradesCache[childUuid]?.let { (ts, data) ->
-            if (now - ts <= PAID_TTL_MS) return@withContext data
-        }
-        val token = store.accessToken ?: return@withContext emptyList()
-        suspend fun call(bearer: String): retrofit2.Response<GradesResponse> {
-            return api.getGrades(authHeader = bearer, childUuid = childUuid)
-        }
-        var bearer = "Bearer $token"
-        var res = call(bearer)
-        if (res.code() == 401 || res.code() == 403) {
-            if (refreshIfNeeded()) {
-                bearer = "Bearer ${store.accessToken}"
-                res = call(bearer)
-            }
-        }
-        if (!res.isSuccessful) {
-            val code = res.code()
-            if (code == 401 || code == 403) error("Unauthorized")
-            return@withContext emptyList()
-        }
-        val list = res.body()?.items ?: emptyList()
-        paidGradesCache[childUuid] = System.currentTimeMillis() to list
-        list
-    }
-
-    // --- Free grades via notifications ---
-    suspend fun getFreeGrades(childUuid: String): List<SubjectGrades> = withContext(Dispatchers.IO) {
-        val token = store.accessToken ?: return@withContext emptyList()
-        val bearer0 = "Bearer $token"
-
-        // Date helpers
-        fun schoolYearStart(today: java.time.LocalDate = java.time.LocalDate.now()): java.time.LocalDate {
-            val septFirst = java.time.LocalDate.of(today.year, 9, 1)
-            return if (today.isBefore(septFirst)) septFirst.minusYears(1) else septFirst
-        }
-        val cutoff = schoolYearStart()
-        val dtf = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-
-        suspend fun fetchPage(bearer: String, lastId: Long?): retrofit2.Response<NotificationsResponse> {
-            return if (lastId == null) api.getNotifications(authHeader = bearer, childUuid = childUuid)
-            else api.getNotificationsAfter(authHeader = bearer, childUuid = childUuid, lastId = lastId)
-        }
-
-        // Try once, then refresh on 401 and retry the same page
-        var bearer = bearer0
-        val all = mutableListOf<NotificationItem>()
-        var lastId: Long? = null
-        var keepGoing = true
-        var refreshed = false
-        while (keepGoing) {
-            var res = fetchPage(bearer, lastId)
-            if ((res.code() == 401 || res.code() == 403) && !refreshed) {
-                if (refreshIfNeeded()) {
-                    bearer = "Bearer ${store.accessToken}"
-                    refreshed = true
-                    res = fetchPage(bearer, lastId)
+    private fun <T> successful(response: Response<T>): T {
+        if (!response.isSuccessful) {
+            val text = response.errorBody()?.string()
+            val message = runCatching {
+                val json = JsonParser.parseString(text).asJsonObject
+                listOf("message", "user_message", "developer_message").firstNotNullOfOrNull { key ->
+                    json.get(key)?.takeIf { it.isJsonPrimitive }?.asString
                 }
-            }
-            if (!res.isSuccessful) {
-                val code = res.code()
-                if (code == 401 || code == 403) error("Unauthorized")
-                break
-            }
-            val items = res.body()?.items.orEmpty()
-            if (items.isEmpty()) break
-            all += items
-            // Stop condition: last item's created_at earlier than cutoff
-            val last = items.last()
-            lastId = last.id
-            val lastDate = try { java.time.LocalDate.parse(last.createdAt?.substring(0,10)) } catch (_: Throwable) { null }
-            if (lastDate != null && lastDate.isBefore(cutoff)) {
-                keepGoing = false
-            }
+            }.getOrNull()
+            throw MobileApiException(response.code(), message ?: when (response.code()) {
+                401 -> "Sign-in failed. Check your username and password."
+                403 -> "This information is unavailable for your account."
+                429 -> "Too many requests. Please try again in a moment."
+                else -> "eAsistent returned HTTP ${response.code()}. Please try again."
+            })
         }
-
-        // Filter only grade notifications
-        val gradeItems = all.asSequence()
-            .filter { it.type?.equals("ocena", ignoreCase = true) == true || (it.title?.startsWith("Nova ocena") == true) }
-            .toList()
-
-        // Parse message: "<value> - <subjectShort>, <typeName>"
-        val regex = Regex("^\\s*([^\\s]+)\\s*-\\s*([^,]+)\\s*,\\s*(.+)")
-        data class Parsed(val subject: String, val grade: GradeItem)
-        val parsed = gradeItems.mapNotNull { item ->
-            val msg = item.message ?: return@mapNotNull null
-            val m = regex.find(msg) ?: return@mapNotNull null
-            val value = m.groupValues.getOrNull(1)
-            val subjectShort = m.groupValues.getOrNull(2)?.trim()
-            val typeName = m.groupValues.getOrNull(3)?.trim()
-            val dateStr = item.createdAt?.substring(0,10)
-            if (subjectShort.isNullOrBlank() || value.isNullOrBlank()) return@mapNotNull null
-            Parsed(
-                subject = subjectShort,
-                grade = GradeItem(
-                    typeName = typeName,
-                    comment = null,
-                    id = item.metaData?.gradeId ?: item.id,
-                    type = "list",
-                    overridesIds = null,
-                    value = value,
-                    color = null,
-                    date = dateStr,
-                    insertedAt = item.createdAt
-                )
-            )
-        }
-
-        // Group by subject and build SubjectGrades with one semester (1)
-        val grouped = parsed.groupBy { it.subject }
-        val result = grouped.map { (subject, list) ->
-            val grades = list.map { it.grade }.sortedByDescending { it.insertedAt }
-            SubjectGrades(
-                name = subject,
-                shortName = subject,
-                id = subject.hashCode().toLong(),
-                gradeType = "grade",
-                isExcused = null,
-                finalGrade = null,
-                averageGrade = null,
-                gradeRank = null,
-                semesters = listOf(
-                    SemesterGrades(
-                        id = 1,
-                        finalGrade = null,
-                        grades = grades
-                    ),
-                    SemesterGrades(
-                        id = 2,
-                        finalGrade = null,
-                        grades = emptyList()
-                    )
-                )
-            )
-        }.sortedBy { it.name }
-        result
+        return response.body() ?: error("eAsistent returned an empty response.")
     }
 }

@@ -1,6 +1,30 @@
 # ibuprofen
 Odprtokodna aplikacija za Android, ki omogoča vpogled v urnike eAsistenta
 
+# Features
+
+- Material 3 interface with light, dark and system themes.
+- Public eAsistent timetables for multiple schools, with class, teacher and room views.
+- Week navigation and clear lesson cards.
+- eAsistent mobile account sign-in, personal timetables and grades.
+- Configurable lesson reminders.
+- Optional self-hosted proxy with timetable caching and direct upstream fallback.
+- Server administration shown when the proxy is enabled: separate admin sign-in, school registration and synchronization progress.
+
+# Building and self-hosting
+
+Open this project in Android Studio, configure your Android SDK, and build the `app` module. You can also build a debug APK with:
+
+```sh
+./gradlew :app:assembleDebug
+```
+
+The APK is generated in `app/build/outputs/apk/debug/`. The proxy is optional; see [ibuprofen API](ibuprofen-api/README.md) for server installation and app configuration. HTTP LAN URLs and HTTPS URLs are supported.
+
+# License
+
+[MIT](LICENSE).
+
 # Credits
 [@MaticBabnik](https://github.com/MaticBabnik) za [easistent-tt](https://github.com/MaticBabnik/easistent-tt)
 
@@ -27,7 +51,7 @@ All communication happens entirely through publicly accessible endpoints.
 
 This project is not affiliated with or endorsed by eŠola d.o.o.
 This app merely provides an alternative interface for users to view their own educational data.
-All communication occurs directly between the user and the official eAsistent servers.
+Personal account communication occurs directly between the user and the official eAsistent servers. Public timetables can optionally pass through a self-hosted proxy configured by the user.
 No credentials or personal data are sent to third-party servers.
 Users are responsible for ensuring their use complies with their school's policies.
 All trademarks belong to their respective owners.

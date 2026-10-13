@@ -1,19 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.ravijol1.ibuprofen"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.ravijol1.ibuprofen"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
-        versionName = "v0.9.0-alpha"
+        versionName = "v1.0.0-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,10 +40,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        @Suppress("DEPRECATION")
-        jvmTarget = "17"
-    }
     buildFeatures {
         compose = true
     }
@@ -53,7 +48,7 @@ android {
 dependencies {
 
     // WorkManager for background scheduling
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -68,11 +63,11 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-scalars:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-    implementation("com.squareup.okhttp3:okhttp:5.3.2")
-    implementation("org.jsoup:jsoup:1.21.2")
+    implementation("com.squareup.okhttp3:okhttp:5.5.0")
+    implementation("org.jsoup:jsoup:1.23.2")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
     // Security for encrypted storage
     implementation("androidx.security:security-crypto:1.1.0")

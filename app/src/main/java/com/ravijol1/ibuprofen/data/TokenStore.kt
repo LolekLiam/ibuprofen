@@ -1,49 +1,43 @@
 package com.ravijol1.ibuprofen.data
 
 import android.content.Context
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import androidx.core.content.edit
 
-class TokenStore(context: Context) {
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
+class TokenStore(context: Context) : AuthSessionStore {
+    private val prefs = SecurePreferences.open(context, PREF_NAME)
 
-    private val prefs = EncryptedSharedPreferences.create(
-        context,
-        PREF_NAME,
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    var accessToken: String?
+    override var accessToken: String?
         get() = prefs.getString(KEY_ACCESS, null)
         set(value) { prefs.edit { putString(KEY_ACCESS, value) } }
 
-    var accessExpiration: String?
+    override var accessExpiration: String?
         get() = prefs.getString(KEY_ACCESS_EXP, null)
         set(value) { prefs.edit { putString(KEY_ACCESS_EXP, value) } }
 
-    var refreshToken: String?
+    override var refreshToken: String?
         get() = prefs.getString(KEY_REFRESH, null)
         set(value) { prefs.edit { putString(KEY_REFRESH, value) } }
 
-    var userName: String?
+    override var userName: String?
         get() = prefs.getString(KEY_USER_NAME, null)
         set(value) { prefs.edit { putString(KEY_USER_NAME, value) } }
 
-    var userId: String?
+    override var userId: String?
         get() = prefs.getString(KEY_USER_ID, null)
         set(value) { prefs.edit { putString(KEY_USER_ID, value) } }
 
-    var schoolId: Int?
+    override var schoolId: Int?
         get() = prefs.getInt(KEY_SCHOOL_ID, -1).takeIf { it >= 0 }
         set(value) { prefs.edit { putInt(KEY_SCHOOL_ID, value ?: -1) } }
 
-    fun clear() {
-        prefs.edit { clear() }
+    override val deviceId: String
+        get() = prefs.getString("device_id", null) ?: ("ibuprofen-" + java.util.UUID.randomUUID()).also {
+            prefs.edit { putString("device_id", it) }
+        }
+
+    override fun clear() {
+        val id = deviceId
+        prefs.edit { clear(); putString("device_id", id) }
     }
 
     companion object {

@@ -8,7 +8,7 @@ data class LoginRequest(
     val username: String,
     val password: String,
     @SerializedName("supported_user_types")
-    val supportedUserTypes: List<String> = listOf("parent", "child")
+    val supportedUserTypes: List<String> = listOf("parent", "child", "parent_of_pre_enrolled")
 )
 
 data class RefreshRequest(
@@ -45,7 +45,7 @@ data class AuthUser(
     val gender: String?
 )
 
-// Children (m/v2/children)
+// Children (m/v3/children)
 
 data class ChildrenResponse(
     val items: List<ChildItem>
@@ -59,7 +59,10 @@ data class ChildItem(
     val gender: String?,
     val age: Int?,
     @SerializedName("short_name") val shortName: String?,
-    @SerializedName("subscription_status") val subscriptionStatus: String?
+    @SerializedName("subscription_status") val subscriptionStatus: String?,
+    @SerializedName("plus_enabled") val plusEnabled: Boolean = false,
+    @SerializedName("school_year") val schoolYear: String? = null,
+    val paywall: ChildPaywall? = null
 )
 
 // Parsed JWT payload subset (no verification; informational)
@@ -78,6 +81,8 @@ data class JwtPayload(
 
 // App-level simplified child profile used by UI
 
+data class ChildPaywall(val status: String?, val content: String?)
+
 data class ChildProfile(
     val uuid: String,
     val studentId: Int,
@@ -85,70 +90,18 @@ data class ChildProfile(
     val displayName: String?,
     val className: String?,
     val schoolName: String?,
-    val subscriptionStatus: String?
+    val subscriptionStatus: String?,
+    val schoolId: Int? = null,
+    val schoolYear: String? = null,
+    val plusEnabled: Boolean = false,
+    val paywallMessage: String? = null
 )
 
-// --- Grades (paid) ---
+fun ChildItem.toProfile(): ChildProfile {
+    // Parse the five numeric components from the end; "child_uuid" is part of the prefix.
+    val ids = Regex("_(\\d+)_(\\d+)_(\\d+)_(\\d+)_(\\d+)$").find(uuid)?.groupValues
+        ?: error("The server returned an unsupported student profile ID")
+    return ChildProfile(uuid, ids[5].toInt(), ids[4].toInt(), displayName, className, schoolName,
+        subscriptionStatus ?: paywall?.status, ids[3].toInt(), schoolYear ?: ids[2], plusEnabled, paywall?.content)
+}
 
-data class GradesResponse(
-    val items: List<SubjectGrades>
-)
-
-data class SubjectGrades(
-    val name: String,
-    @SerializedName("short_name") val shortName: String?,
-    val id: Long,
-    @SerializedName("grade_type") val gradeType: String?,
-    @SerializedName("is_excused") val isExcused: Boolean?,
-    @SerializedName("final_grade") val finalGrade: String?,
-    @SerializedName("average_grade") val averageGrade: String?,
-    @SerializedName("grade_rank") val gradeRank: String?,
-    val semesters: List<SemesterGrades>
-)
-
-data class SemesterGrades(
-    val id: Int,
-    @SerializedName("final_grade") val finalGrade: String?,
-    val grades: List<GradeItem>
-)
-
-data class GradeItem(
-    @SerializedName("type_name") val typeName: String?,
-    val comment: String?,
-    val id: Long,
-    val type: String?,
-    @SerializedName("overrides_ids") val overridesIds: List<Long>?,
-    val value: String?,
-    val color: String?,
-    val date: String?, // yyyy-MM-dd
-    @SerializedName("inserted_at") val insertedAt: String?
-)
-
-
-// --- Notifications (free grades source) ---
-
-data class NotificationsResponse(
-    val items: List<NotificationItem>
-)
-
-data class NotificationItem(
-    val title: String?,
-    val message: String?,
-    @SerializedName("meta_data") val metaData: NotificationMeta?,
-    val id: Long,
-    @SerializedName("created_at") val createdAt: String?, // "yyyy-MM-dd HH:mm:ss"
-    val seen: Boolean?,
-    val type: String?
-)
-
-data class NotificationMeta(
-    val channelId: String?,
-    val messageId: Long?,
-    val userId: Long?,
-    val channelType: String?,
-    val gradeId: Long?,
-    val subjectId: Long?,
-    val date: String?,
-    @SerializedName("schedule_id") val scheduleId: Long?,
-    @SerializedName("event_slug") val eventSlug: String?
-)

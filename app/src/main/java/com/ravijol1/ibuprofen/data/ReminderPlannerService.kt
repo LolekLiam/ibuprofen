@@ -69,41 +69,22 @@ class ReminderPlannerService : Service() {
          */
         fun planAlarmsOnce(ctx: Context, onDone: () -> Unit = {}) {
             val appCtx = ctx.applicationContext
-            val tokenStore = TokenStore(appCtx)
             val settings = SettingsStore(appCtx)
-            val session = tokenStore.accessToken
-            val schoolId = tokenStore.schoolId
-            val studentId = settings.selectedChildStudentId
-            val classId = settings.selectedChildClassId ?: 0
-            if (session.isNullOrBlank() || schoolId == null || studentId == null) {
-                onDone()
-                return
-            }
-
-            // Optional proactive refresh
             try {
-                val authRepo = AuthRepository(NetworkProvider.authApi, tokenStore)
-                // Best-effort refresh; ignore result
-                kotlinx.coroutines.runBlocking { authRepo.refreshIfNeeded() }
-            } catch (_: Throwable) { }
-
-            // Load current week timetable and schedule remaining alarms for today
-            try {
-                val week = kotlinx.coroutines.runBlocking {
-                    NetworkProvider.repository.loadChildTimetableWeek(
-                        accessToken = TokenStore(appCtx).accessToken ?: session,
-                        schoolId = schoolId,
-                        studentId = studentId,
-                        weekId = 0,
-                        classId = classId
-                    )
+                val week = kotlinx.coroutines.runBlocking { mobileReminderWeek(appCtx) } ?: run {
+                    onDone()
+                    return
                 }
                 val now = LocalDateTime.now(ZONE)
                 val today = now.toLocalDate()
                 val todayDay = week.days.find { it.date == today }
                 if (todayDay != null) {
-                    todayDay.lessonsByPeriod.forEach { cell ->
+                    todayDay.lessonsByPeriod.filterIsInstance<PeriodCell.WithLessons>()
+                        .filter { it.lessons.any { lesson -> !lesson.isCancelled } && LocalDateTime.of(today, it.timeRange.start).isAfter(now) }
+                        .sortedBy { it.timeRange.start }.take(1).forEach { cell ->
                         if (cell is PeriodCell.WithLessons) {
+                            val activeLessons = cell.lessons.filterNot { it.isCancelled }
+                            if (activeLessons.isEmpty()) return@forEach
                             val s = cell.timeRange.start
                             val e = cell.timeRange.endInclusive
                             val valid = !(s == LocalTime.MIDNIGHT && e == LocalTime.MIDNIGHT)
@@ -113,8 +94,8 @@ class ReminderPlannerService : Service() {
                                 val startEpoch = startDT.atZone(ZONE).toEpochSecond()
                                 val fireAt = startDT.minusMinutes(5).atZone(ZONE).toEpochSecond()
                                 ReminderWorker.ReminderScheduler.run {
-                                    val title = "Čez 5 min: " + cell.lessons.mapNotNull { it.subjectCode ?: it.subjectTitle }.filter { it.isNotBlank() }.joinToString(", ")
-                                    val message = cell.lessons.mapNotNull { it.room }.distinct().joinToString(", ").let { if (it.isNotBlank()) "Učilnica: $it" else "" }
+                                    val title = "Čez 5 min: " + activeLessons.mapNotNull { it.subjectCode ?: it.subjectTitle }.filter { it.isNotBlank() }.joinToString(", ")
+                                    val message = activeLessons.mapNotNull { it.room }.distinct().joinToString(", ").let { if (it.isNotBlank()) "Učilnica: $it" else "" }
                                     try {
                                         ReminderWorker.ReminderScheduler.scheduleExactAlarm(
                                             ctx = appCtx,

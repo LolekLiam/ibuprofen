@@ -1,0 +1,2255 @@
+{
+  "items": [
+    {
+      "week_index": 1,
+      "current": false,
+      "from": "2026-09-01",
+      "to": "2026-09-04",
+      "days": [
+        {
+          "id": 1,
+          "date": "2026-09-01",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 2,
+          "date": "2026-09-02",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 3,
+          "date": "2026-09-03",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 4,
+          "date": "2026-09-04",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 2,
+      "current": false,
+      "from": "2026-09-07",
+      "to": "2026-09-11",
+      "days": [
+        {
+          "id": 5,
+          "date": "2026-09-07",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 6,
+          "date": "2026-09-08",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 7,
+          "date": "2026-09-09",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 8,
+          "date": "2026-09-10",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 9,
+          "date": "2026-09-11",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 3,
+      "current": false,
+      "from": "2026-09-14",
+      "to": "2026-09-18",
+      "days": [
+        {
+          "id": 10,
+          "date": "2026-09-14",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 11,
+          "date": "2026-09-15",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 12,
+          "date": "2026-09-16",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 13,
+          "date": "2026-09-17",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 14,
+          "date": "2026-09-18",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 4,
+      "current": false,
+      "from": "2026-09-21",
+      "to": "2026-09-25",
+      "days": [
+        {
+          "id": 15,
+          "date": "2026-09-21",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 16,
+          "date": "2026-09-22",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 17,
+          "date": "2026-09-23",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 18,
+          "date": "2026-09-24",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 19,
+          "date": "2026-09-25",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 5,
+      "current": false,
+      "from": "2026-09-28",
+      "to": "2026-10-02",
+      "days": [
+        {
+          "id": 20,
+          "date": "2026-09-28",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 21,
+          "date": "2026-09-29",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 22,
+          "date": "2026-09-30",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 23,
+          "date": "2026-10-01",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 24,
+          "date": "2026-10-02",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 6,
+      "current": false,
+      "from": "2026-10-05",
+      "to": "2026-10-09",
+      "days": [
+        {
+          "id": 25,
+          "date": "2026-10-05",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 26,
+          "date": "2026-10-06",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 27,
+          "date": "2026-10-07",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 28,
+          "date": "2026-10-08",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 29,
+          "date": "2026-10-09",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 7,
+      "current": true,
+      "from": "2026-10-12",
+      "to": "2026-10-16",
+      "days": [
+        {
+          "id": 30,
+          "date": "2026-10-12",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 31,
+          "date": "2026-10-13",
+          "name": "Torek",
+          "short_name": "T",
+          "current": true
+        },
+        {
+          "id": 32,
+          "date": "2026-10-14",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 33,
+          "date": "2026-10-15",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 34,
+          "date": "2026-10-16",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 8,
+      "current": false,
+      "from": "2026-10-19",
+      "to": "2026-10-23",
+      "days": [
+        {
+          "id": 35,
+          "date": "2026-10-19",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 36,
+          "date": "2026-10-20",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 37,
+          "date": "2026-10-21",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 38,
+          "date": "2026-10-22",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 39,
+          "date": "2026-10-23",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 9,
+      "current": false,
+      "from": "2026-10-26",
+      "to": "2026-10-30",
+      "days": [
+        {
+          "id": 40,
+          "date": "2026-10-26",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 41,
+          "date": "2026-10-27",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 42,
+          "date": "2026-10-28",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 43,
+          "date": "2026-10-29",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 44,
+          "date": "2026-10-30",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 10,
+      "current": false,
+      "from": "2026-11-02",
+      "to": "2026-11-06",
+      "days": [
+        {
+          "id": 45,
+          "date": "2026-11-02",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 46,
+          "date": "2026-11-03",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 47,
+          "date": "2026-11-04",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 48,
+          "date": "2026-11-05",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 49,
+          "date": "2026-11-06",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 11,
+      "current": false,
+      "from": "2026-11-09",
+      "to": "2026-11-13",
+      "days": [
+        {
+          "id": 50,
+          "date": "2026-11-09",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 51,
+          "date": "2026-11-10",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 52,
+          "date": "2026-11-11",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 53,
+          "date": "2026-11-12",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 54,
+          "date": "2026-11-13",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 12,
+      "current": false,
+      "from": "2026-11-16",
+      "to": "2026-11-20",
+      "days": [
+        {
+          "id": 55,
+          "date": "2026-11-16",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 56,
+          "date": "2026-11-17",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 57,
+          "date": "2026-11-18",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 58,
+          "date": "2026-11-19",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 59,
+          "date": "2026-11-20",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 13,
+      "current": false,
+      "from": "2026-11-23",
+      "to": "2026-11-27",
+      "days": [
+        {
+          "id": 60,
+          "date": "2026-11-23",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 61,
+          "date": "2026-11-24",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 62,
+          "date": "2026-11-25",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 63,
+          "date": "2026-11-26",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 64,
+          "date": "2026-11-27",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 14,
+      "current": false,
+      "from": "2026-11-30",
+      "to": "2026-12-04",
+      "days": [
+        {
+          "id": 65,
+          "date": "2026-11-30",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 66,
+          "date": "2026-12-01",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 67,
+          "date": "2026-12-02",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 68,
+          "date": "2026-12-03",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 69,
+          "date": "2026-12-04",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 15,
+      "current": false,
+      "from": "2026-12-07",
+      "to": "2026-12-11",
+      "days": [
+        {
+          "id": 70,
+          "date": "2026-12-07",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 71,
+          "date": "2026-12-08",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 72,
+          "date": "2026-12-09",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 73,
+          "date": "2026-12-10",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 74,
+          "date": "2026-12-11",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 16,
+      "current": false,
+      "from": "2026-12-14",
+      "to": "2026-12-18",
+      "days": [
+        {
+          "id": 75,
+          "date": "2026-12-14",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 76,
+          "date": "2026-12-15",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 77,
+          "date": "2026-12-16",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 78,
+          "date": "2026-12-17",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 79,
+          "date": "2026-12-18",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 17,
+      "current": false,
+      "from": "2026-12-21",
+      "to": "2026-12-25",
+      "days": [
+        {
+          "id": 80,
+          "date": "2026-12-21",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 81,
+          "date": "2026-12-22",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 82,
+          "date": "2026-12-23",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 83,
+          "date": "2026-12-24",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 84,
+          "date": "2026-12-25",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 18,
+      "current": false,
+      "from": "2026-12-28",
+      "to": "2027-01-01",
+      "days": [
+        {
+          "id": 85,
+          "date": "2026-12-28",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 86,
+          "date": "2026-12-29",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 87,
+          "date": "2026-12-30",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 88,
+          "date": "2026-12-31",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 89,
+          "date": "2027-01-01",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 19,
+      "current": false,
+      "from": "2027-01-04",
+      "to": "2027-01-08",
+      "days": [
+        {
+          "id": 90,
+          "date": "2027-01-04",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 91,
+          "date": "2027-01-05",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 92,
+          "date": "2027-01-06",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 93,
+          "date": "2027-01-07",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 94,
+          "date": "2027-01-08",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 20,
+      "current": false,
+      "from": "2027-01-11",
+      "to": "2027-01-15",
+      "days": [
+        {
+          "id": 95,
+          "date": "2027-01-11",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 96,
+          "date": "2027-01-12",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 97,
+          "date": "2027-01-13",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 98,
+          "date": "2027-01-14",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 99,
+          "date": "2027-01-15",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 21,
+      "current": false,
+      "from": "2027-01-18",
+      "to": "2027-01-22",
+      "days": [
+        {
+          "id": 100,
+          "date": "2027-01-18",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 101,
+          "date": "2027-01-19",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 102,
+          "date": "2027-01-20",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 103,
+          "date": "2027-01-21",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 104,
+          "date": "2027-01-22",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 22,
+      "current": false,
+      "from": "2027-01-25",
+      "to": "2027-01-29",
+      "days": [
+        {
+          "id": 105,
+          "date": "2027-01-25",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 106,
+          "date": "2027-01-26",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 107,
+          "date": "2027-01-27",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 108,
+          "date": "2027-01-28",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 109,
+          "date": "2027-01-29",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 23,
+      "current": false,
+      "from": "2027-02-01",
+      "to": "2027-02-05",
+      "days": [
+        {
+          "id": 110,
+          "date": "2027-02-01",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 111,
+          "date": "2027-02-02",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 112,
+          "date": "2027-02-03",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 113,
+          "date": "2027-02-04",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 114,
+          "date": "2027-02-05",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 24,
+      "current": false,
+      "from": "2027-02-08",
+      "to": "2027-02-12",
+      "days": [
+        {
+          "id": 115,
+          "date": "2027-02-08",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 116,
+          "date": "2027-02-09",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 117,
+          "date": "2027-02-10",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 118,
+          "date": "2027-02-11",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 119,
+          "date": "2027-02-12",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 25,
+      "current": false,
+      "from": "2027-02-15",
+      "to": "2027-02-19",
+      "days": [
+        {
+          "id": 120,
+          "date": "2027-02-15",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 121,
+          "date": "2027-02-16",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 122,
+          "date": "2027-02-17",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 123,
+          "date": "2027-02-18",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 124,
+          "date": "2027-02-19",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 26,
+      "current": false,
+      "from": "2027-02-22",
+      "to": "2027-02-26",
+      "days": [
+        {
+          "id": 125,
+          "date": "2027-02-22",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 126,
+          "date": "2027-02-23",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 127,
+          "date": "2027-02-24",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 128,
+          "date": "2027-02-25",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 129,
+          "date": "2027-02-26",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 27,
+      "current": false,
+      "from": "2027-03-01",
+      "to": "2027-03-05",
+      "days": [
+        {
+          "id": 130,
+          "date": "2027-03-01",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 131,
+          "date": "2027-03-02",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 132,
+          "date": "2027-03-03",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 133,
+          "date": "2027-03-04",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 134,
+          "date": "2027-03-05",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 28,
+      "current": false,
+      "from": "2027-03-08",
+      "to": "2027-03-12",
+      "days": [
+        {
+          "id": 135,
+          "date": "2027-03-08",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 136,
+          "date": "2027-03-09",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 137,
+          "date": "2027-03-10",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 138,
+          "date": "2027-03-11",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 139,
+          "date": "2027-03-12",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 29,
+      "current": false,
+      "from": "2027-03-15",
+      "to": "2027-03-19",
+      "days": [
+        {
+          "id": 140,
+          "date": "2027-03-15",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 141,
+          "date": "2027-03-16",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 142,
+          "date": "2027-03-17",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 143,
+          "date": "2027-03-18",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 144,
+          "date": "2027-03-19",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 30,
+      "current": false,
+      "from": "2027-03-22",
+      "to": "2027-03-26",
+      "days": [
+        {
+          "id": 145,
+          "date": "2027-03-22",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 146,
+          "date": "2027-03-23",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 147,
+          "date": "2027-03-24",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 148,
+          "date": "2027-03-25",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 149,
+          "date": "2027-03-26",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 31,
+      "current": false,
+      "from": "2027-03-29",
+      "to": "2027-04-02",
+      "days": [
+        {
+          "id": 150,
+          "date": "2027-03-29",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 151,
+          "date": "2027-03-30",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 152,
+          "date": "2027-03-31",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 153,
+          "date": "2027-04-01",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 154,
+          "date": "2027-04-02",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 32,
+      "current": false,
+      "from": "2027-04-05",
+      "to": "2027-04-09",
+      "days": [
+        {
+          "id": 155,
+          "date": "2027-04-05",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 156,
+          "date": "2027-04-06",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 157,
+          "date": "2027-04-07",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 158,
+          "date": "2027-04-08",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 159,
+          "date": "2027-04-09",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 33,
+      "current": false,
+      "from": "2027-04-12",
+      "to": "2027-04-16",
+      "days": [
+        {
+          "id": 160,
+          "date": "2027-04-12",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 161,
+          "date": "2027-04-13",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 162,
+          "date": "2027-04-14",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 163,
+          "date": "2027-04-15",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 164,
+          "date": "2027-04-16",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 34,
+      "current": false,
+      "from": "2027-04-19",
+      "to": "2027-04-23",
+      "days": [
+        {
+          "id": 165,
+          "date": "2027-04-19",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 166,
+          "date": "2027-04-20",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 167,
+          "date": "2027-04-21",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 168,
+          "date": "2027-04-22",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 169,
+          "date": "2027-04-23",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 35,
+      "current": false,
+      "from": "2027-04-26",
+      "to": "2027-04-30",
+      "days": [
+        {
+          "id": 170,
+          "date": "2027-04-26",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 171,
+          "date": "2027-04-27",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 172,
+          "date": "2027-04-28",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 173,
+          "date": "2027-04-29",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 174,
+          "date": "2027-04-30",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 36,
+      "current": false,
+      "from": "2027-05-03",
+      "to": "2027-05-07",
+      "days": [
+        {
+          "id": 175,
+          "date": "2027-05-03",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 176,
+          "date": "2027-05-04",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 177,
+          "date": "2027-05-05",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 178,
+          "date": "2027-05-06",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 179,
+          "date": "2027-05-07",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 37,
+      "current": false,
+      "from": "2027-05-10",
+      "to": "2027-05-14",
+      "days": [
+        {
+          "id": 180,
+          "date": "2027-05-10",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 181,
+          "date": "2027-05-11",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 182,
+          "date": "2027-05-12",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 183,
+          "date": "2027-05-13",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 184,
+          "date": "2027-05-14",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 38,
+      "current": false,
+      "from": "2027-05-17",
+      "to": "2027-05-21",
+      "days": [
+        {
+          "id": 185,
+          "date": "2027-05-17",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 186,
+          "date": "2027-05-18",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 187,
+          "date": "2027-05-19",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 188,
+          "date": "2027-05-20",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 189,
+          "date": "2027-05-21",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 39,
+      "current": false,
+      "from": "2027-05-24",
+      "to": "2027-05-28",
+      "days": [
+        {
+          "id": 190,
+          "date": "2027-05-24",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 191,
+          "date": "2027-05-25",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 192,
+          "date": "2027-05-26",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 193,
+          "date": "2027-05-27",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 194,
+          "date": "2027-05-28",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 40,
+      "current": false,
+      "from": "2027-05-31",
+      "to": "2027-06-04",
+      "days": [
+        {
+          "id": 195,
+          "date": "2027-05-31",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 196,
+          "date": "2027-06-01",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 197,
+          "date": "2027-06-02",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 198,
+          "date": "2027-06-03",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 199,
+          "date": "2027-06-04",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 41,
+      "current": false,
+      "from": "2027-06-07",
+      "to": "2027-06-11",
+      "days": [
+        {
+          "id": 200,
+          "date": "2027-06-07",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 201,
+          "date": "2027-06-08",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 202,
+          "date": "2027-06-09",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 203,
+          "date": "2027-06-10",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 204,
+          "date": "2027-06-11",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 42,
+      "current": false,
+      "from": "2027-06-14",
+      "to": "2027-06-18",
+      "days": [
+        {
+          "id": 205,
+          "date": "2027-06-14",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 206,
+          "date": "2027-06-15",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 207,
+          "date": "2027-06-16",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 208,
+          "date": "2027-06-17",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 209,
+          "date": "2027-06-18",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 43,
+      "current": false,
+      "from": "2027-06-21",
+      "to": "2027-06-25",
+      "days": [
+        {
+          "id": 210,
+          "date": "2027-06-21",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 211,
+          "date": "2027-06-22",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 212,
+          "date": "2027-06-23",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 213,
+          "date": "2027-06-24",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 214,
+          "date": "2027-06-25",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 44,
+      "current": false,
+      "from": "2027-06-28",
+      "to": "2027-07-02",
+      "days": [
+        {
+          "id": 215,
+          "date": "2027-06-28",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 216,
+          "date": "2027-06-29",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 217,
+          "date": "2027-06-30",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 218,
+          "date": "2027-07-01",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 219,
+          "date": "2027-07-02",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 45,
+      "current": false,
+      "from": "2027-07-05",
+      "to": "2027-07-09",
+      "days": [
+        {
+          "id": 220,
+          "date": "2027-07-05",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 221,
+          "date": "2027-07-06",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 222,
+          "date": "2027-07-07",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 223,
+          "date": "2027-07-08",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 224,
+          "date": "2027-07-09",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 46,
+      "current": false,
+      "from": "2027-07-12",
+      "to": "2027-07-16",
+      "days": [
+        {
+          "id": 225,
+          "date": "2027-07-12",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 226,
+          "date": "2027-07-13",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 227,
+          "date": "2027-07-14",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 228,
+          "date": "2027-07-15",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 229,
+          "date": "2027-07-16",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 47,
+      "current": false,
+      "from": "2027-07-19",
+      "to": "2027-07-23",
+      "days": [
+        {
+          "id": 230,
+          "date": "2027-07-19",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 231,
+          "date": "2027-07-20",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 232,
+          "date": "2027-07-21",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 233,
+          "date": "2027-07-22",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 234,
+          "date": "2027-07-23",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 48,
+      "current": false,
+      "from": "2027-07-26",
+      "to": "2027-07-30",
+      "days": [
+        {
+          "id": 235,
+          "date": "2027-07-26",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 236,
+          "date": "2027-07-27",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 237,
+          "date": "2027-07-28",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 238,
+          "date": "2027-07-29",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 239,
+          "date": "2027-07-30",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 49,
+      "current": false,
+      "from": "2027-08-02",
+      "to": "2027-08-06",
+      "days": [
+        {
+          "id": 240,
+          "date": "2027-08-02",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 241,
+          "date": "2027-08-03",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 242,
+          "date": "2027-08-04",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 243,
+          "date": "2027-08-05",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 244,
+          "date": "2027-08-06",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 50,
+      "current": false,
+      "from": "2027-08-09",
+      "to": "2027-08-13",
+      "days": [
+        {
+          "id": 245,
+          "date": "2027-08-09",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 246,
+          "date": "2027-08-10",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 247,
+          "date": "2027-08-11",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 248,
+          "date": "2027-08-12",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 249,
+          "date": "2027-08-13",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 51,
+      "current": false,
+      "from": "2027-08-16",
+      "to": "2027-08-20",
+      "days": [
+        {
+          "id": 250,
+          "date": "2027-08-16",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 251,
+          "date": "2027-08-17",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 252,
+          "date": "2027-08-18",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 253,
+          "date": "2027-08-19",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 254,
+          "date": "2027-08-20",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 52,
+      "current": false,
+      "from": "2027-08-23",
+      "to": "2027-08-27",
+      "days": [
+        {
+          "id": 255,
+          "date": "2027-08-23",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 256,
+          "date": "2027-08-24",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        },
+        {
+          "id": 257,
+          "date": "2027-08-25",
+          "name": "Sreda",
+          "short_name": "S",
+          "current": false
+        },
+        {
+          "id": 258,
+          "date": "2027-08-26",
+          "name": "\u010cetrtek",
+          "short_name": "\u010c",
+          "current": false
+        },
+        {
+          "id": 259,
+          "date": "2027-08-27",
+          "name": "Petek",
+          "short_name": "P",
+          "current": false
+        }
+      ]
+    },
+    {
+      "week_index": 53,
+      "current": false,
+      "from": "2027-08-30",
+      "to": "2027-08-31",
+      "days": [
+        {
+          "id": 260,
+          "date": "2027-08-30",
+          "name": "Ponedeljek",
+          "short_name": "P",
+          "current": false
+        },
+        {
+          "id": 261,
+          "date": "2027-08-31",
+          "name": "Torek",
+          "short_name": "T",
+          "current": false
+        }
+      ]
+    }
+  ]
+}

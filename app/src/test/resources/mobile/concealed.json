@@ -1,0 +1,85 @@
+{
+  "four_to_five": {
+    "subjects": [
+      {
+        "number_grades": 1,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 1,
+        "has_final_grade": false
+      }
+    ]
+  },
+  "three_to_four": {
+    "subjects": []
+  },
+  "one_to_three": {
+    "subjects": [
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      },
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      }
+    ]
+  },
+  "subjects_without_grades": {
+    "subjects": [
+      {
+        "number_grades": 0,
+        "has_final_grade": false
+      }
+    ]
+  }
+}

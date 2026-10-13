@@ -12,6 +12,8 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ReminderWorker.ACTION_REMINDER) return
         val appCtx = context.applicationContext
+        val settings = SettingsStore(appCtx)
+        if (!settings.remindersEnabled || AuthRepository(NetworkProvider.authApi, TokenStore(appCtx)).currentSession() == null) return
         val startEpoch = intent.getLongExtra(ReminderWorker.EXTRA_START_EPOCH, -1L)
         val title = intent.getStringExtra(ReminderWorker.EXTRA_TITLE)
         val message = intent.getStringExtra(ReminderWorker.EXTRA_MESSAGE)
@@ -20,7 +22,6 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
 
         if (startEpoch > 0 && !title.isNullOrBlank()) {
             // De-dup: store last reminder epoch
-            val settings = SettingsStore(appCtx)
             settings.lastReminderStartEpoch = startEpoch
 
             NotificationHelper.showLessonNotification(
