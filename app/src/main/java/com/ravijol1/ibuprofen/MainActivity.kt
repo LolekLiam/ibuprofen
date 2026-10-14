@@ -1,5 +1,11 @@
 package com.ravijol1.ibuprofen
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -56,6 +62,25 @@ fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, j
     var selectedUuid by remember { mutableStateOf(settings.selectedChildUuid) }
     var reminders by remember { mutableStateOf(settings.remindersEnabled) }
     var remindersError by remember { mutableStateOf<String?>(null) }
+    var exactAlarmsAllowed by remember { mutableStateOf(ReminderWorker.canScheduleExactAlarms(context)) }
+    var notificationsAllowed by remember { mutableStateOf(NotificationHelper.canShowLessonNotifications(context)) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentReminders by rememberUpdatedState(reminders)
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                exactAlarmsAllowed = ReminderWorker.canScheduleExactAlarms(context)
+                notificationsAllowed = NotificationHelper.canShowLessonNotifications(context)
+                if (currentReminders) ReminderWorker.enable(context.applicationContext)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    fun requestPreciseReminders() {
+        if (Build.VERSION.SDK_INT >= 31) context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+            Uri.parse("package:${context.packageName}")))
+    }
     var proxyEnabled by remember { mutableStateOf(settings.proxyEnabled) }
     var proxyUrl by remember { mutableStateOf(settings.proxyUrl) }
     val child = profiles.firstOrNull { it.uuid == selectedUuid }
@@ -96,6 +121,7 @@ fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, j
         settings.remindersEnabled = true
         reminders = true
         NotificationHelper.ensureChannel(context.applicationContext)
+        if (!ReminderWorker.canScheduleExactAlarms(context)) requestPreciseReminders()
     }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) enableReminders() else remindersError = "Allow notifications in Android settings to receive lesson reminders."
@@ -167,6 +193,10 @@ fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, j
                     AppTab.Child -> PersonalTimetableScreen(auth, profileUi, jumpToChildDate, onSessionExpired = { sessionExpired() })
                     AppTab.Grades -> GradesScreen(auth, profileUi, onSessionExpired = { sessionExpired() })
                     AppTab.Settings -> SettingsScreen(reminders, remindersError, child, proxyEnabled, proxyUrl,
+                        exactAlarmsAllowed = exactAlarmsAllowed, notificationsAllowed = notificationsAllowed,
+                        onAllowPreciseReminders = { requestPreciseReminders() },
+                        onOpenNotificationSettings = { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                            .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) },
                         onRemindersChange = { enabled ->
                             remindersError = null
                             if (!enabled) disableReminders()

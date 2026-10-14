@@ -13,7 +13,9 @@ import com.ravijol1.ibuprofen.data.NetworkProvider
 
 @Composable
 internal fun SettingsScreen(reminders: Boolean, remindersError: String?, child: ChildProfile?,
-    proxyEnabled: Boolean, proxyUrl: String, onRemindersChange: (Boolean) -> Unit,
+    proxyEnabled: Boolean, proxyUrl: String, exactAlarmsAllowed: Boolean, notificationsAllowed: Boolean,
+    onAllowPreciseReminders: () -> Unit, onOpenNotificationSettings: () -> Unit,
+    onRemindersChange: (Boolean) -> Unit,
     onProxySave: (Boolean, String) -> Unit) {
     var advanced by rememberSaveable { mutableStateOf(false) }
     var draftEnabled by rememberSaveable(proxyEnabled) { mutableStateOf(proxyEnabled) }
@@ -36,6 +38,15 @@ internal fun SettingsScreen(reminders: Boolean, remindersError: String?, child: 
                     Text(child?.let { "For ${it.displayName ?: "your student"}${it.className?.let { name -> " · $name" }.orEmpty()}" }
                         ?: "Sign in and choose a student in My schedule first.", style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (reminders && !exactAlarmsAllowed) {
+                        Text("Allow alarms and reminders in Android settings for precise timing. Otherwise notifications may arrive late.",
+                            style = MaterialTheme.typography.bodySmall)
+                        TextButton(onClick = onAllowPreciseReminders) { Text("Allow precise reminders") }
+                    }
+                    if (reminders && !notificationsAllowed) {
+                        Text("Lesson notifications are turned off in Android settings.", style = MaterialTheme.typography.bodySmall)
+                        TextButton(onClick = onOpenNotificationSettings) { Text("Open notification settings") }
+                    }
                 }
             }
         }

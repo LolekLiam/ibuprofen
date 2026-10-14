@@ -3,38 +3,24 @@ package com.ravijol1.ibuprofen.data
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import java.time.Instant
 
-/**
- * Receives the exact alarm at the planned fire time and displays the lesson reminder.
- * Also re-enqueues the planner worker to compute the subsequent reminder.
- */
 class ReminderAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ReminderWorker.ACTION_REMINDER) return
-        val appCtx = context.applicationContext
-        val settings = SettingsStore(appCtx)
-        if (!settings.remindersEnabled || AuthRepository(NetworkProvider.authApi, TokenStore(appCtx)).currentSession() == null) return
-        val startEpoch = intent.getLongExtra(ReminderWorker.EXTRA_START_EPOCH, -1L)
-        val title = intent.getStringExtra(ReminderWorker.EXTRA_TITLE)
-        val message = intent.getStringExtra(ReminderWorker.EXTRA_MESSAGE)
-        val dateIso = intent.getStringExtra(ReminderWorker.EXTRA_DATE)
-        val timeHm = intent.getStringExtra(ReminderWorker.EXTRA_TIME)
-
-        if (startEpoch > 0 && !title.isNullOrBlank()) {
-            // De-dup: store last reminder epoch
-            settings.lastReminderStartEpoch = startEpoch
-
-            NotificationHelper.showLessonNotification(
-                appCtx,
-                notifyId = (startEpoch % Int.MAX_VALUE).toInt(),
-                title = title,
-                message = message ?: "",
-                dateIso = dateIso,
-                timeHm = timeHm,
-                periodNumber = null
-            )
+        val ctx = context.applicationContext
+        val settings = SettingsStore(ctx)
+        if (!settings.remindersEnabled || AuthRepository(NetworkProvider.authApi, TokenStore(ctx)).currentSession() == null) return
+        val epoch = intent.data?.lastPathSegment?.toLongOrNull() ?: return // Ignore old single-alarm payloads.
+        val reminder = ReminderAlarms.lesson(ctx, epoch) ?: return
+        val now = Instant.now().epochSecond
+        if (shouldDeliverReminder(epoch, now, settings.lastReminderStartEpoch)) {
+            if (NotificationHelper.showLessonNotification(ctx, (epoch % Int.MAX_VALUE).toInt(),
+                reminder.title(now), reminder.message, reminder.dateIso, reminder.timeHm)) {
+                settings.lastReminderStartEpoch = epoch
+            }
         }
-        // Schedule planner soon to compute next reminder
-        ReminderWorker.enable(appCtx)
+        // Later lessons are already armed. This refresh only updates the cached schedule.
+        ReminderWorker.refresh(ctx)
     }
 }

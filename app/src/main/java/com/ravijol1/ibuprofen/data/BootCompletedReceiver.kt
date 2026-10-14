@@ -6,13 +6,8 @@ import android.content.Intent
 
 class BootCompletedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (Intent.ACTION_BOOT_COMPLETED == intent.action) {
-            val appCtx = context.applicationContext
-            val settings = SettingsStore(appCtx)
-            if (settings.remindersEnabled) {
-                ReminderWorker.rescheduleOnBoot(appCtx)
-                ReminderPlannerService.enqueue(appCtx)
-            }
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+            ReminderWorker.enable(context.applicationContext)
         }
     }
 }

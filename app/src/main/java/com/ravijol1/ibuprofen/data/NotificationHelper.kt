@@ -35,6 +35,12 @@ object NotificationHelper {
         }
     }
 
+    fun canShowLessonNotifications(context: Context): Boolean {
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        return NotificationManagerCompat.from(context).areNotificationsEnabled() &&
+            manager.getNotificationChannel(CHANNEL_ID)?.importance != NotificationManager.IMPORTANCE_NONE
+    }
+
     fun showLessonNotification(
         context: Context,
         notifyId: Int,
@@ -43,7 +49,7 @@ object NotificationHelper {
         dateIso: String? = null, // yyyy-MM-dd
         timeHm: String? = null,  // HH:mm
         periodNumber: Int? = null
-    ) {
+    ): Boolean {
         ensureChannel(context)
         // Open app to Child tab and jump to specific day/period
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -55,7 +61,7 @@ object NotificationHelper {
         }
         val pi = PendingIntent.getActivity(
             context,
-            1001,
+            notifyId,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -73,15 +79,12 @@ object NotificationHelper {
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
-        // Check permission on Android 13+
-        val canNotify = try {
-            androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
-        } catch (_: Throwable) { true }
-        if (!canNotify) return
+        if (!canShowLessonNotifications(context)) return false
         try {
             NotificationManagerCompat.from(context).notify(notifyId, builder.build())
+            return true
         } catch (_: SecurityException) {
-            // Swallow if permission not granted
+            return false
         }
     }
 }
