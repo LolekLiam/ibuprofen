@@ -113,16 +113,53 @@ class AuthRepository(private val api: AuthApi, private val store: AuthSessionSto
         return withContext(Dispatchers.Default) { MobileTimetableMapper.map(response, child, start, end) }
     }
 
-    suspend fun getMobileGrades(childUuid: String): MobileGrades {
-        val overview = authorized { api.getOverview(it, childUuid) }
-        var unavailable = false
-        val summary = try { authorized { api.getConcealedGrades(it, childUuid) } }
-            catch (e: MobileApiException) {
+    suspend fun getMobileGrades(childUuid: String, hasPlus: Boolean = false, schoolYear: String? = null,
+        onProgress: (Int) -> Unit = {}): MobileGrades {
+        var notice: String? = null
+        if (hasPlus) {
+            try {
+                val gradebook = authorized { api.getGrades(it, childUuid) }
+                return MobileGrades(subjects = gradebook.items.orEmpty().sortedBy { it.name },
+                    source = GradeSource.Plus)
+            } catch (e: MobileApiException) {
                 if (e.status != 403 && e.status != 404) throw e
-                unavailable = true
-                null
+                notice = "The full gradebook is unavailable for this profile. Showing grades recovered from notifications."
             }
-        return MobileGrades(overview.latestGrades.distinctBy { it.id }.sortedByDescending { it.date }, summary, unavailable)
+        }
+        val history = getNotificationGrades(childUuid, schoolYear, onProgress)
+        return MobileGrades(subjects = history.subjects, source = GradeSource.Notifications,
+            notice = notice, historyComplete = history.complete)
+    }
+
+    private suspend fun getNotificationGrades(childUuid: String, schoolYear: String?, onProgress: (Int) -> Unit): NotificationGradeHistory {
+        val cutoff = gradeSchoolYearStart(schoolYear, LocalDate.now(SCHOOL_ZONE))
+        val collected = mutableListOf<GradeNotification>()
+        val cursors = mutableSetOf<Long>()
+        var cursor: Long? = null
+        var complete = false
+        var page = 0
+        while (true) {
+            page++
+            val items = try {
+                authorized { token -> cursor?.let { api.getOlderNotifications(token, childUuid, it) }
+                    ?: api.getNotifications(token, childUuid) }.items.orEmpty()
+            } catch (e: CancellationException) { throw e }
+            catch (e: SessionExpiredException) { throw e }
+            catch (e: Exception) {
+                if (collected.isEmpty()) throw e
+                break // Retain already loaded grades and report incomplete history.
+            }
+            onProgress(page)
+            if (items.isEmpty()) { complete = true; break }
+            collected += items
+            if (items.any { notificationDate(it.createdAt)?.isBefore(cutoff) == true }) { complete = true; break }
+            val next = items.last().id
+            if (next <= 0 || (cursor != null && next >= cursor) || !cursors.add(next)) break
+            cursor = next
+        }
+        return withContext(Dispatchers.Default) {
+            NotificationGradeHistory(NotificationGradeParser.parse(collected, cutoff), complete)
+        }
     }
 
     private fun <T> successful(response: Response<T>): T {

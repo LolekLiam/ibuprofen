@@ -39,6 +39,8 @@ class MobileApiTest {
                 "/m/timetable/events" -> fixture("events.json")
                 "/m/overview/basic" -> fixture("overview.json")
                 "/m/grades/concealed" -> fixture("concealed.json")
+                "/m/me/notifications" -> "{\"items\":[]}"
+
                 "/m/refresh_token" -> {
                     val login = gson.fromJson(fixture("login.json"), LoginResponse::class.java)
                     gson.toJson(RefreshResponse(login.accessToken.copy(token = "rotated-access"), "rotated-refresh", null))
@@ -76,8 +78,9 @@ class MobileApiTest {
         assertEquals(5, schedule.week.days.size)
         assertEquals(2, schedule.events.size)
         val grades = repo.getMobileGrades(child.uuid)
-        assertEquals(1, grades.recent.size)
-        assertEquals(14, grades.summary!!.oneToThree!!.subjects.size)
+        assertEquals(GradeSource.Notifications, grades.source)
+        assertTrue(grades.subjects.isEmpty())
+        assertFalse(requests.any { it.url.encodedPath == "/m/overview/basic" || it.url.encodedPath == "/m/grades/concealed" })
         assertFalse(requests.any { it.url.encodedPath == "/m/refresh_token" })
         val timetable = requests.first { it.url.encodedPath == "/m/timetable/events" }
         assertEquals(child.uuid, timetable.header("X-Child-Id"))

@@ -1,0 +1,48 @@
+{
+  "items": [
+    {
+      "id": 898,
+      "type": "ocena",
+      "title": "Nova ocena",
+      "message": "<b>4</b> – ART, Example oral assessment",
+      "created_at": "2026-10-10 12:00:00",
+      "meta_data": {
+        "grade_id": 1002,
+        "subject_id": 502
+      }
+    },
+    {
+      "id": 897,
+      "type": "ocena",
+      "title": "Nova ocena",
+      "message": "5 - SYN, Example written assessment",
+      "created_at": "2026-10-09 12:00:00",
+      "meta_data": {
+        "gradeId": 1001,
+        "subjectId": 501
+      }
+    },
+    {
+      "id": 896,
+      "type": "ocena",
+      "title": "Nova ocena",
+      "message": "NPS - SYN, Example practical assessment",
+      "created_at": "2026-09-09 12:00:00",
+      "meta_data": {
+        "gradeId": 1003,
+        "subjectId": 501
+      }
+    },
+    {
+      "id": 895,
+      "type": "ocena",
+      "title": "Nova ocena",
+      "message": "3 - SYN, Previous school year assessment",
+      "created_at": "2026-08-31 12:00:00",
+      "meta_data": {
+        "gradeId": 999,
+        "subjectId": 501
+      }
+    }
+  ]
+}

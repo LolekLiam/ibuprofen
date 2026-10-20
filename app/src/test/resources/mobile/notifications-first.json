@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "id": 901,
+      "type": "ocena",
+      "title": "Nova ocena",
+      "message": "5 - SYN, Example written assessment",
+      "created_at": "2026-10-13 12:00:00",
+      "meta_data": {
+        "gradeId": 1001,
+        "subjectId": 501
+      }
+    },
+    {
+      "id": 900,
+      "type": "future_evaluation",
+      "title": "Upcoming assessment",
+      "message": "SYN (Example assessment)",
+      "created_at": "2026-10-12 12:00:00",
+      "meta_data": {
+        "date": "2026-10-20"
+      }
+    },
+    {
+      "id": 899,
+      "type": "substitution_students",
+      "title": "Substitution",
+      "message": "Classroom changed",
+      "created_at": "2026-10-11 12:00:00",
+      "meta_data": null
+    }
+  ]
+}

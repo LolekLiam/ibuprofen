@@ -1,0 +1,105 @@
+{
+  "items": [
+    {
+      "id": 501,
+      "name": "Synthetic Systems",
+      "short_name": "SYN",
+      "grade_type": "grade",
+      "is_excused": false,
+      "average_grade": "4.50",
+      "final_grade": {
+        "value": "5",
+        "date": "2027-06-18",
+        "inserted_by": {
+          "id": 701,
+          "name": "Morgan Example"
+        }
+      },
+      "semesters": [
+        {
+          "id": 1,
+          "final_grade": {
+            "value": "4",
+            "date": "2027-01-20"
+          },
+          "grades": [
+            {
+              "id": 1001,
+              "value": "1",
+              "date": "2026-10-02",
+              "type_name": "Example assessment",
+              "comment": null,
+              "inserted_at": "2026-10-02 12:00:00",
+              "overrides_ids": null
+            },
+            {
+              "id": 1002,
+              "value": "4",
+              "date": "2026-10-09",
+              "type_name": "Example assessment",
+              "comment": "Synthetic retake assessment",
+              "inserted_at": "2026-10-09 12:00:00",
+              "overrides_ids": [
+                1001
+              ]
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "final_grade": "5",
+          "grades": [
+            {
+              "id": 1003,
+              "value": "NPS",
+              "date": "2027-03-02",
+              "type_name": "Example assessment",
+              "comment": null,
+              "inserted_at": "2027-03-02 12:00:00",
+              "overrides_ids": null
+            },
+            {
+              "id": 1004,
+              "value": "5",
+              "date": "2027-03-09",
+              "type_name": "Example assessment",
+              "comment": null,
+              "inserted_at": "2027-03-09 12:00:00",
+              "overrides_ids": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 502,
+      "name": "Example Art",
+      "short_name": "ART",
+      "grade_type": "grade",
+      "is_excused": false,
+      "average_grade": null,
+      "final_grade": null,
+      "semesters": [
+        {
+          "id": 1,
+          "final_grade": null,
+          "grades": []
+        },
+        {
+          "id": 2,
+          "final_grade": null,
+          "grades": []
+        }
+      ]
+    },
+    {
+      "id": 503,
+      "name": "Example Activity",
+      "short_name": "ACT",
+      "grade_type": "word",
+      "is_excused": true,
+      "final_grade": "Excused",
+      "semesters": null
+    }
+  ]
+}

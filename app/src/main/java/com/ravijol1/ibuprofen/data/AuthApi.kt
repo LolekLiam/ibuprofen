@@ -33,4 +33,19 @@ interface AuthApi {
     @GET("m/grades/concealed")
     suspend fun getConcealedGrades(@Header("Authorization") authHeader: String,
         @Header("X-Child-Id") childUuid: String): Response<ConcealedGrades>
+
+    @GET("m/grades")
+    suspend fun getGrades(@Header("Authorization") authHeader: String,
+        @Header("X-Child-Id") childUuid: String,
+        @Query("with[]") include: List<String> = listOf("all_subjects", "color")): Response<GradesResponse>
+
+    @GET("m/me/notifications")
+    suspend fun getNotifications(@Header("Authorization") authHeader: String,
+        @Header("X-Child-Id") childUuid: String,
+        @Query("exclude") exclude: String = "komunikacija"): Response<NotificationsResponse>
+
+    @GET("m/me/notifications/{lastId}")
+    suspend fun getOlderNotifications(@Header("Authorization") authHeader: String,
+        @Header("X-Child-Id") childUuid: String, @Path("lastId") lastId: Long,
+        @Query("exclude") exclude: String = "komunikacija"): Response<NotificationsResponse>
 }

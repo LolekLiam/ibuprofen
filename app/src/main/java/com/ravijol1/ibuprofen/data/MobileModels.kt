@@ -91,4 +91,5 @@ data class ConcealedGrades(
 data class GradeBand(val subjects: List<ConcealedSubject> = emptyList())
 data class ConcealedSubject(@SerializedName("number_grades") val numberGrades: Int,
     @SerializedName("has_final_grade") val hasFinalGrade: Boolean)
-data class MobileGrades(val recent: List<RecentGrade>, val summary: ConcealedGrades?, val summaryUnavailable: Boolean = false)
+data class MobileGrades(val subjects: List<SubjectGrades>, val source: GradeSource,
+    val notice: String? = null, val historyComplete: Boolean = true)

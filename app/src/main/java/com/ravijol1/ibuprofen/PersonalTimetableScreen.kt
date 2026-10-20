@@ -101,23 +101,34 @@ internal fun PersonalTimetableScreen(auth: AuthRepository, profileUi: ProfileUi,
                 shownDays.forEach { day ->
                     item { Text(day.date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM")), style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    val events = personal.events.filter { it.date == day.date.toString() }
-                    items(events, key = { it.slug }) { event ->
-                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
-                            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(event.title ?: event.shortTitle ?: "School event", style = MaterialTheme.typography.titleMedium)
-                                Text(if (event.from == "00:00" && event.to == "23:59") "All day" else "${event.from} – ${event.to}",
-                                    style = MaterialTheme.typography.bodySmall)
-                                event.classroom?.takeIf { it.isNotBlank() }?.let { Text("Room $it", style = MaterialTheme.typography.bodyMedium) }
-                                event.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-                            }
+                    val timeline = personalScheduleTimeline(day, personal.events)
+                    items(timeline, key = { entry ->
+                        when (entry) {
+                            is PersonalScheduleEntry.Event -> "${day.date}:event:${entry.event.slug}"
+                            is PersonalScheduleEntry.Lesson -> "${day.date}:lesson:${entry.cell.periodNumber}:${entry.startTime}:${entry.cell.timeRange.endInclusive}"
+                        }
+                    }) { entry ->
+                        when (entry) {
+                            is PersonalScheduleEntry.Lesson -> LessonPeriodCard(entry.cell)
+                            is PersonalScheduleEntry.Event -> PersonalEventCard(entry.event)
                         }
                     }
-                    val cells = day.lessonsByPeriod.filterIsInstance<PeriodCell.WithLessons>()
-                    items(cells) { cell -> LessonPeriodCard(cell) }
-                    if (cells.isEmpty() && events.isEmpty()) item { EmptyNotice("No lessons scheduled", "Try another day or week.") }
+                    if (timeline.isEmpty()) item { EmptyNotice("No lessons scheduled", "Try another day or week.") }
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+private fun PersonalEventCard(event: MobileEvent) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(event.title ?: event.shortTitle ?: "School event", style = MaterialTheme.typography.titleMedium)
+            Text(if (event.isAllDay) "All day" else "${event.from} – ${event.to}", style = MaterialTheme.typography.bodySmall)
+            event.classroom?.takeIf { it.isNotBlank() }?.let { Text("Room $it", style = MaterialTheme.typography.bodyMedium) }
+            event.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
         }
     }
 }
