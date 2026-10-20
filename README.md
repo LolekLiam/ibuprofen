@@ -30,19 +30,19 @@ The APK is generated in `app/build/outputs/apk/debug/`. The proxy is optional; s
 
 [@chocoearly44](https://github.com/chocoearly44) za [JEA](https://github.com/chocoearly44/JEA)
 
-Special thanks to eAsistent dev team za NIČ ker nimate javnega API-ja in ker gatekeepate naše redovalnice
+Special thanks to eAsistent dev team za NIČ ker nimate javnega API-ja in ker gatekeepate naše redovalnice.
 
 # TODO
 - ~fix ui~
 - ~optimize~
 - ~fix ux~
-- ~add support for other schools~(some1 test please?)
 - ~add easistent auth~
 - ~fuck easistent, free redovalnice za vse~
-- switch few endpoints from mobile to web
-- add support for parent login
+- ~add support for parent login~
+- switch endpoints from mobile to web?
+- add support for other schools
 - see upcoming tests
-- suggestions?
+- schedule customization
 
 # Disclaimer
 This project was created by observing publicly visible network traffic in the eAsistent web application.
