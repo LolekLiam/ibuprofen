@@ -6,7 +6,6 @@ import java.time.LocalTime
 // Metadata for a school and its classes
 data class SchoolMeta(
     val schoolKey: String,
-    val schoolId: Int,
     val classes: List<ClassInfo>,
     val teachers: List<TeacherInfo> = emptyList(), // Proxy might provide this
     val schoolName: String? = null,
@@ -18,8 +17,7 @@ data class SchoolMeta(
 data class TeacherInfo(
     val id: Int? = 0,
     val full_name: String? = "",
-    val short_name: String? = "",
-    val school_id: Int? = 0
+    val short_name: String? = ""
 )
 
 data class ClassInfo(

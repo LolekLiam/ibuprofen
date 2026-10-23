@@ -8,9 +8,9 @@ interface EAsistentApi {
     @GET("urniki/{schoolKey}/")
     suspend fun getSchoolPage(@Path("schoolKey") schoolKey: String): Response<String>
 
-    @GET("urniki/izpis/{schoolId}/{classId}/{professorId}/{classroomId}/{extracurriculars}/{weekId}/{studentId}")
+    @GET("urniki/izpis/{schoolKey}/{classId}/{professorId}/{classroomId}/{extracurriculars}/{weekId}/{studentId}")
     suspend fun getTimetable(
-        @Path("schoolId") schoolId: String,
+        @Path("schoolKey") schoolKey: String,
         @Path("classId") classId: Int,
         @Path("professorId") professorId: Int = 0,
         @Path("studentId") studentId: Int = 0,

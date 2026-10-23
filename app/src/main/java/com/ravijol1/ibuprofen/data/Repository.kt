@@ -10,16 +10,7 @@ import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.ConcurrentHashMap
 
 class TimetableRepository(private val api: EAsistentApi) {
-    private val schoolKeys = ConcurrentHashMap<Int, String>()
     private var proxyApi: IbuprofenProxyApi? = null
-
-    private suspend fun resolveSchoolKey(schoolId: Int): String {
-        schoolKeys[schoolId]?.let { return it }
-        // Background reminders may start in a fresh process before the screen loads.
-        val meta = loadSchoolMeta(DEFAULT_SCHOOL_KEY)
-        require(meta.schoolId == schoolId) { "Load the matching school before requesting its timetable" }
-        return meta.schoolKey
-    }
 
     companion object {
         const val DEFAULT_SCHOOL_KEY = "5738623c4f3588f82583378c44ceb026102d6bae"
@@ -29,8 +20,8 @@ class TimetableRepository(private val api: EAsistentApi) {
         this.proxyApi = api
     }
 
-    // In-memory cache: (schoolId, classId, weekId) -> TimetableWeek
-    private val weekCache = ConcurrentHashMap<Triple<Int, Int, Int>, TimetableWeek>()
+    // In-memory cache: (schoolKey, classId, weekId) -> TimetableWeek
+    private val weekCache = ConcurrentHashMap<Triple<String, Int, Int>, TimetableWeek>()
     fun clearAllCaches() {
         weekCache.clear()
     }
@@ -42,7 +33,7 @@ class TimetableRepository(private val api: EAsistentApi) {
                 val res = proxy.getSchoolMeta(schoolKey)
                 println("[DEBUG_LOG] TimetableRepository.loadSchoolMeta: proxy response code=${res.code()}")
                 if (res.isSuccessful) {
-                    return (res.body()?.data ?: error("Empty school meta from proxy")).also { schoolKeys[it.schoolId] = schoolKey }
+                    return (res.body()?.data ?: error("Empty school meta from proxy"))
                 }
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
@@ -52,18 +43,18 @@ class TimetableRepository(private val api: EAsistentApi) {
         val res = api.getSchoolPage(schoolKey)
         val body = res.body() ?: error("Empty school page")
         if (!res.isSuccessful) error("School page: HTTP ${res.code()}")
-        return SchoolPageParser.parse(body, schoolKey).also { schoolKeys[it.schoolId] = it.schoolKey }
+        return SchoolPageParser.parse(body, schoolKey)
     }
 
-    suspend fun loadTimetableWeek(schoolId: Int, classId: Int, weekId: Int, useProxy: Boolean = true): TimetableWeek {
+    suspend fun loadTimetableWeek(schoolKey: String, classId: Int, weekId: Int, useProxy: Boolean = true): TimetableWeek {
         require(weekId in 0..52) { "weekId out of range" }
-        val key = Triple(schoolId, classId, weekId)
+        val key = Triple(schoolKey, classId, weekId)
         weekCache[key]?.let { return it }
 
         println("[DEBUG_LOG] TimetableRepository.loadTimetableWeek: key=$key, proxyApi=$proxyApi")
         proxyApi?.takeIf { useProxy }?.let { proxy ->
             try {
-                val res = proxy.getClassTimetable(resolveSchoolKey(schoolId), classId, weekId)
+                val res = proxy.getClassTimetable(schoolKey, classId, weekId)
                 println("[DEBUG_LOG] TimetableRepository.loadTimetableWeek: proxy response code=${res.code()}")
                 if (res.isSuccessful) {
                     val body = res.body()?.data ?: error("Empty timetable from proxy")
@@ -77,7 +68,7 @@ class TimetableRepository(private val api: EAsistentApi) {
             }
         }
 
-        val res = api.getTimetable(resolveSchoolKey(schoolId), classId, weekId = weekId)
+        val res = api.getTimetable(schoolKey, classId, weekId = weekId)
         if (!res.isSuccessful) error("Timetable: HTTP ${res.code()}")
         val body = res.body() ?: error("Empty timetable body")
         val parsed = withContext(Dispatchers.Default) { TimetableParser.parse(classId, body) }
@@ -87,7 +78,7 @@ class TimetableRepository(private val api: EAsistentApi) {
 
     // Aggregate directly from the public source while the proxy is being updated.
     suspend fun loadSchoolTimetables(
-        schoolId: Int,
+        schoolKey: String,
         classes: List<ClassInfo>,
         weekId: Int,
         onProgress: (completed: Int, total: Int) -> Unit = { _, _ -> }
@@ -95,14 +86,14 @@ class TimetableRepository(private val api: EAsistentApi) {
         val ready = mutableMapOf<Int, TimetableWeek>()
         proxyApi?.let { proxy ->
             try {
-                val response = proxy.getSchoolTimetables(resolveSchoolKey(schoolId), weekId)
+                val response = proxy.getSchoolTimetables(schoolKey, weekId)
                 if (response.isSuccessful) response.body()?.let { envelope ->
                     val missing = envelope.meta?.missing_class_ids.orEmpty().toSet()
                     envelope.data.filter { it.classId !in missing }.forEach { cached ->
                         val cls = classes.firstOrNull { it.id == cached.classId } ?: return@forEach
                         val week = cached.toDomain(cls.id)
                         ready[cls.id] = annotateWeekWithClassLabel(week, cls.label)
-                        weekCache[Triple(schoolId, cls.id, weekId)] = week
+                        weekCache[Triple(schoolKey, cls.id, weekId)] = week
                     }
                 }
             } catch (e: Exception) {
@@ -115,7 +106,7 @@ class TimetableRepository(private val api: EAsistentApi) {
             async {
                 val week = try {
                     sem.withPermit {
-                        ready[cls.id] ?: annotateWeekWithClassLabel(loadTimetableWeek(schoolId, cls.id, weekId), cls.label)
+                        ready[cls.id] ?: annotateWeekWithClassLabel(loadTimetableWeek(schoolKey, cls.id, weekId), cls.label)
                     }
                 } catch (e: Exception) {
                     if (e is kotlinx.coroutines.CancellationException) throw e
@@ -128,8 +119,8 @@ class TimetableRepository(private val api: EAsistentApi) {
         SchoolTimetables(results.mapNotNull { it.second }, results.filter { it.second == null }.map { it.first })
     }
 
-    suspend fun loadAllTimetablesForWeek(schoolId: Int, classes: List<ClassInfo>, weekId: Int): List<TimetableWeek> =
-        loadSchoolTimetables(schoolId, classes, weekId).weeks
+    suspend fun loadAllTimetablesForWeek(schoolKey: String, classes: List<ClassInfo>, weekId: Int): List<TimetableWeek> =
+        loadSchoolTimetables(schoolKey, classes, weekId).weeks
 
     private fun annotateWeekWithClassLabel(week: TimetableWeek, classLabel: String): TimetableWeek {
         val newDays = week.days.map { day ->

@@ -8,20 +8,19 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 object SchoolPageParser {
-    private val idRegex = Regex("var\\s+id_sola\\s*=\\s*'(?<id>\\d+)'")
     private val weekRegex = Regex("Teden\\s+(\\d+)")
 
     fun parse(html: String, schoolKey: String): SchoolMeta {
         val doc = Jsoup.parse(html)
-        val scriptText = doc.select("script").joinToString("\n") { it.data() }
-        val schoolId = idRegex.find(scriptText)?.groups?.get("id")?.value?.toInt()
-            ?: error("id_sola not found in school page")
+        // The requested public key is the school's identifier; no numeric ID is required.
 
         val classes = doc.select("#id_parameter > option").mapNotNull { opt ->
             val id = opt.attr("value").toIntOrNull() ?: return@mapNotNull null
             if (id <= 0 || opt.parents().any { it.tagName() == "optgroup" }) return@mapNotNull null
             ClassInfo(id = id, label = opt.text().trim())
         }
+
+        check(classes.isNotEmpty()) { "School classes missing. The school may require sign-in or the service format changed." }
 
         val schoolName = doc.selectFirst("div.urnik_title")?.text()?.trim()
         val tedniToggle = doc.selectFirst("#tedni-toggle")?.text()?.trim()?.replace("\n", " ")?.replace("\\s+".toRegex(), " ")
@@ -30,7 +29,6 @@ object SchoolPageParser {
 
         return SchoolMeta(
             schoolKey = schoolKey,
-            schoolId = schoolId,
             classes = classes,
             schoolName = schoolName,
             currentWeekId = currentWeekId,
