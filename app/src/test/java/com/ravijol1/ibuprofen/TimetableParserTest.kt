@@ -11,11 +11,24 @@ class TimetableParserTest {
 
     @Test fun publicSchoolProvidesClassesAndCurrentWeek() {
         val meta = SchoolPageParser.parse(fixture("school.html"), "school-key")
-        assertEquals(9001, meta.schoolId)
+        assertEquals("school-key", meta.schoolKey)
         assertEquals(7, meta.currentWeekId)
         assertTrue(meta.classes.any { it.id == 101 && it.label == "TEST-A" })
         assertFalse(meta.classes.any { it.label.all(Char::isDigit) })
         assertTrue(meta.allWeekIds!!.contains(7))
+    }
+
+    @Test fun schoolMetadataUsesStringKeyWithoutAnIdScript() {
+        val key = "synthetic-school-hash-a1b2"
+        val html = fixture("school.html").replace(Regex("<script>.*?</script>", RegexOption.DOT_MATCHES_ALL), "")
+        val meta = SchoolPageParser.parse(html, key)
+        assertEquals(key, meta.schoolKey)
+        assertTrue(meta.classes.isNotEmpty())
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun invalidSchoolPageIsNotAcceptedAsEmptyMetadata() {
+        SchoolPageParser.parse("<html>Service unavailable</html>", "school-key")
     }
 
     @Test fun printableHtmlContainsDatesLessonsAndTimes() {
