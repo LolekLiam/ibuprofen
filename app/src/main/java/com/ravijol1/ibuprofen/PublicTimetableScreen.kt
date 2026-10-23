@@ -74,7 +74,7 @@ internal fun PublicTimetableScreen(
     }
 
     // Compose cancels obsolete requests on mode, selection, week, or refresh changes.
-    LaunchedEffect(meta?.schoolId, mode, classId, teacher, room, weekId, refreshVersion) {
+    LaunchedEffect(meta?.schoolKey, mode, classId, teacher, room, weekId, refreshVersion) {
         displayedWeek = null
         failure = null
         failedClasses = emptyList()
@@ -85,9 +85,9 @@ internal fun PublicTimetableScreen(
         loading = true
         try {
             displayedWeek = when (mode) {
-                ScheduleView.Class -> repository.loadTimetableWeek(school.schoolId, classId!!, weekId)
+                ScheduleView.Class -> repository.loadTimetableWeek(school.schoolKey, classId!!, weekId)
                 else -> {
-                    val result = schoolWeeks[weekId] ?: repository.loadSchoolTimetables(school.schoolId, school.classes, weekId) { done, total ->
+                    val result = schoolWeeks[weekId] ?: repository.loadSchoolTimetables(school.schoolKey, school.classes, weekId) { done, total ->
                         progress = done to total
                     }.also { schoolWeeks[weekId] = it }
                     failedClasses = result.failedClasses
