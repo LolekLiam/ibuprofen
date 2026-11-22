@@ -6,8 +6,13 @@ interface AuthSessionStore {
     var accessExpiration: String?
     var refreshToken: String?
     var userName: String?
+    var userEmail: String?
+        get() = null
+        set(value) {}
     var userId: String?
     var schoolId: Int?
     val deviceId: String
+    fun readGrades(key: String): String? = null
+    fun writeGrades(key: String, value: String) {}
     fun clear()
 }

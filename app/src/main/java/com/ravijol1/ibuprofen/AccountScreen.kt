@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -21,7 +22,13 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun AccountScreen(auth: AuthRepository, session: AuthRepository.Session?, profiles: List<ChildProfile>,
     profilesLoading: Boolean, profilesError: String?, onSignedIn: (AuthRepository.Session) -> Unit,
-    onSignedOut: () -> Unit, onOpenSchedule: () -> Unit, onChooseProfile: (ChildProfile) -> Unit) {
+    onSignedOut: () -> Unit, onChooseProfile: (ChildProfile) -> Unit) {
+    var identity by remember(session) { mutableStateOf(session) }
+    LaunchedEffect(session?.userId) {
+        if (session != null) try { identity = auth.refreshAccountIdentity() ?: session }
+        catch (e: CancellationException) { throw e }
+        catch (_: Exception) { /* Keep the saved identity when account info is unavailable. */ }
+    }
     val scope = rememberCoroutineScope()
     var username by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -39,7 +46,7 @@ internal fun AccountScreen(auth: AuthRepository, session: AuthRepository.Session
         }
     }
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(20.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
-        item { ScreenTitle("Account", if (session == null) "Connect your eAsistent account" else "Your school account") }
+        item { ScreenTitle("Account") }
         if (session == null) {
             item {
                 Card {
@@ -66,10 +73,14 @@ internal fun AccountScreen(auth: AuthRepository, session: AuthRepository.Session
         } else {
             item {
                 Card {
-                    Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(session.userName ?: "eAsistent account", style = MaterialTheme.typography.titleLarge)
-                        Text("Signed in", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium)
-                        Button(onClick = onOpenSchedule, Modifier.fillMaxWidth()) { Text("Open my schedule") }
+                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(identity?.userName ?: "eAsistent account", style = MaterialTheme.typography.titleMedium)
+                            identity?.email?.let { Text(it, style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        }
+                        Text("Signed in", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }

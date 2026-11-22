@@ -58,7 +58,8 @@ data class Lesson(
     val sourceClassLabel: String? = null, // originating class label (for teacher mode cross-reference)
     val sourceClassId: String? = null, // proxy provides this
     val isSubstitution: Boolean = false,
-    val notes: List<String> = emptyList()
+    val notes: List<String> = emptyList(),
+    val change: LessonChange? = null
 )
 
 // Proxy response models
@@ -93,14 +94,15 @@ data class LessonProxy(
     val sourceClassLabel: String?,
     val sourceClassId: String?,
     val isSubstitution: Boolean = false,
-    val notes: List<String?>? = null
+    val notes: List<String?>? = null,
+    val change: LessonChange? = null
 ) {
     fun toDomain() = Lesson(
         subjectCode = subjectCode, subjectTitle = subjectTitle, teacher = teacher,
         room = room, groupLabel = groupLabel, isCancelled = isCancelled,
         teacherFullName = teacherFullName, sourceClassLabel = sourceClassLabel,
         sourceClassId = sourceClassId, isSubstitution = isSubstitution,
-        notes = notes.orEmpty().filterNotNull()
+        notes = notes.orEmpty().filterNotNull(), change = change
     )
 }
 

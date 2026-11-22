@@ -16,6 +16,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,21 +47,35 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val initialTab = AppTab.entries.firstOrNull { it.name == intent.getStringExtra("open_tab") }
         setContent {
-            IbuprofenTheme {
-                TimetableScreen(initialTab = initialTab, jumpToChildDate = intent.getStringExtra("jump_to_child_date"))
+            val appearanceSettings = remember { SettingsStore(applicationContext) }
+            var themeMode by remember { mutableStateOf(appearanceSettings.themeMode) }
+            val darkTheme = when (themeMode) {
+                "Light" -> false
+                "Dark" -> true
+                else -> androidx.compose.foundation.isSystemInDarkTheme()
+            }
+            IbuprofenTheme(darkTheme = darkTheme) {
+                TimetableScreen(initialTab = initialTab, jumpToChildDate = intent.getStringExtra("jump_to_child_date"),
+                    themeMode = themeMode, onThemeChange = { themeMode = it; appearanceSettings.themeMode = it })
             }
         }
     }
 }
 
 @Composable
-fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, jumpToChildDate: String? = null) {
+fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, jumpToChildDate: String? = null,
+    themeMode: String = "System", onThemeChange: (String) -> Unit = {}) {
     val context = LocalContext.current
     val tokens = remember { TokenStore(context.applicationContext) }
     val settings = remember { SettingsStore(context.applicationContext) }
     val auth = remember { AuthRepository(NetworkProvider.authApi, tokens) }
     var session by remember { mutableStateOf(auth.currentSession()) }
-    var tab by rememberSaveable { mutableStateOf(initialTab ?: AppTab.Public) }
+    val tabs = listOf(AppTab.Public, AppTab.Child, AppTab.Grades, AppTab.Login, AppTab.Settings)
+    val pager = rememberPagerState(initialPage = tabs.indexOf(initialTab ?: AppTab.Public), pageCount = { tabs.size })
+    val navigationScope = rememberCoroutineScope()
+    fun navigate(destination: AppTab) {
+        navigationScope.launch { pager.animateScrollToPage(tabs.indexOf(destination)) }
+    }
     var school by remember { mutableStateOf<SchoolMeta?>(null) }
     var schoolLoading by remember { mutableStateOf(false) }
     var schoolError by remember { mutableStateOf<String?>(null) }
@@ -164,35 +189,51 @@ fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, j
     }
 
     val profileUi = ProfileUi(session != null, profiles, child, profilesLoading, profilesError,
-        onSelect = { persistChild(it) }, onRetry = { profilesRevision++ }, onSignIn = { tab = AppTab.Login })
-    val tabs = listOf(AppTab.Public, AppTab.Child, AppTab.Grades, AppTab.Login, AppTab.Settings)
+        onSelect = { persistChild(it) }, onRetry = { profilesRevision++ }, onSignIn = { navigate(AppTab.Login) })
     Scaffold(modifier.fillMaxSize(), bottomBar = {
-        NavigationBar {
-            tabs.forEach { destination ->
-                NavigationBarItem(selected = tab == destination, onClick = { tab = destination },
-                    icon = { NavigationIcon(destination) }, label = { Text(when (destination) {
-                        AppTab.Public -> "Timetable"
-                        AppTab.Child -> "My schedule"
-                        AppTab.Grades -> "Grades"
-                        AppTab.Login -> "Account"
-                        AppTab.Settings -> "Settings"
-                    }, maxLines = 1, style = MaterialTheme.typography.labelSmall) })
+        val indicatorColor = MaterialTheme.colorScheme.secondaryContainer
+        val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+        Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
+            Box {
+                Canvas(Modifier.matchParentSize()) {
+                    val position = pager.currentPage + pager.currentPageOffsetFraction
+                    val slot = size.width / tabs.size
+                    val center = slot * (position + 0.5f)
+                    val x = if (rtl) size.width - center else center
+                    drawRoundRect(indicatorColor, topLeft = Offset(x - 32.dp.toPx(), 12.dp.toPx()),
+                        size = Size(64.dp.toPx(), 32.dp.toPx()), cornerRadius = CornerRadius(16.dp.toPx()))
+                }
+                NavigationBar(containerColor = Color.Transparent) {
+                    tabs.forEachIndexed { index, destination ->
+                        NavigationBarItem(selected = pager.currentPage == index, onClick = { navigate(destination) },
+                            colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent),
+                            icon = { NavigationIcon(destination) }, label = { Text(when (destination) {
+                                AppTab.Public -> "Timetable"
+                                AppTab.Child -> "Schedule"
+                                AppTab.Grades -> "Grades"
+                                AppTab.Login -> "Account"
+                                AppTab.Settings -> "Settings"
+                            }, modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE), maxLines = 1, style = MaterialTheme.typography.labelSmall) })
+                    }
+                }
             }
         }
     }) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp, vertical = 12.dp)) {
-            viewState.SaveableStateProvider(tab.name) {
-                when (tab) {
+        HorizontalPager(state = pager, modifier = Modifier.fillMaxSize().padding(padding), key = { tabs[it].name }) { page ->
+            Box(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
+                viewState.SaveableStateProvider(tabs[page].name) {
+                    when (tabs[page]) {
                     AppTab.Public -> PublicTimetableScreen(school, schoolLoading, schoolError, { schoolRevision++ }, settings)
                     AppTab.Login -> AccountScreen(auth, session, profiles, profilesLoading, profilesError,
                         onSignedIn = {
                             disableReminders(); settings.clearChild(); selectedUuid = null
                             profiles = emptyList(); session = it; profilesRevision++
-                        }, onSignedOut = { sessionExpired() }, onOpenSchedule = { tab = AppTab.Child },
-                        onChooseProfile = { persistChild(it); tab = AppTab.Child })
+                        }, onSignedOut = { sessionExpired() },
+                        onChooseProfile = { persistChild(it); navigate(AppTab.Child) })
                     AppTab.Child -> PersonalTimetableScreen(auth, profileUi, jumpToChildDate, onSessionExpired = { sessionExpired() })
                     AppTab.Grades -> GradesScreen(auth, profileUi, onSessionExpired = { sessionExpired() })
                     AppTab.Settings -> SettingsScreen(reminders, remindersError, child, proxyEnabled, proxyUrl,
+                        themeMode = themeMode, onThemeChange = onThemeChange,
                         exactAlarmsAllowed = exactAlarmsAllowed, notificationsAllowed = notificationsAllowed,
                         onAllowPreciseReminders = { requestPreciseReminders() },
                         onOpenNotificationSettings = { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
@@ -207,6 +248,7 @@ fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, j
                             proxyEnabled = enabled; proxyUrl = url
                             settings.proxyEnabled = enabled; settings.proxyUrl = url
                         })
+                }
                 }
             }
         }

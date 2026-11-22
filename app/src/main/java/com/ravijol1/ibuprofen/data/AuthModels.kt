@@ -42,7 +42,10 @@ data class AuthUser(
     val name: String?,
     val type: String?,
     @SerializedName("freshPassword") val freshPassword: String?,
-    val gender: String?
+    val gender: String?,
+    val firstname: String? = null,
+    val lastname: String? = null,
+    val email: String? = null
 )
 
 // Children (m/v3/children)
@@ -105,3 +108,9 @@ fun ChildItem.toProfile(): ChildProfile {
         subscriptionStatus ?: paywall?.status, ids[3].toInt(), schoolYear ?: ids[2], plusEnabled, paywall?.content)
 }
 
+
+data class AccountInfoResponse(val parent: AccountIdentity? = null, val child: AccountIdentity? = null)
+data class AccountIdentity(
+    @SerializedName("user_id") val userId: String?,
+    val firstname: String?, val lastname: String?, val email: String?
+)

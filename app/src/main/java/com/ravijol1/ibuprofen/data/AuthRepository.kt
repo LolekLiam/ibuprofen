@@ -27,7 +27,7 @@ object TokenExpiry {
 
 class AuthRepository(private val api: AuthApi, private val store: AuthSessionStore) {
     data class Session(val accessToken: String, val refreshToken: String, val userName: String?,
-        val userId: String?, val schoolId: Int?)
+        val userId: String?, val schoolId: Int?, val email: String? = null)
     companion object { private val refreshMutex = Mutex() }
 
     suspend fun login(username: String, password: String): Session = withContext(Dispatchers.IO) {
@@ -39,7 +39,10 @@ class AuthRepository(private val api: AuthApi, private val store: AuthSessionSto
         refreshMutex.withLock {
             store.clear()
             saveTokens(body.accessToken, body.refreshToken)
-            store.userName = body.user?.name ?: username.trim()
+            store.userName = listOfNotNull(body.user?.firstname, body.user?.lastname).filter { it.isNotBlank() }
+                .joinToString(" ").ifBlank { body.user?.name ?: username.trim() }
+            store.userEmail = body.user?.email ?: body.user?.username?.takeIf { '@' in it }
+                ?: username.trim().takeIf { '@' in it }
             store.userId = body.user?.id?.toString() ?: JwtUtils.parsePayload(body.accessToken.token)?.userId
         }
         currentSession() ?: error("Could not save the mobile session.")
@@ -55,7 +58,18 @@ class AuthRepository(private val api: AuthApi, private val store: AuthSessionSto
     fun currentSession(): Session? {
         val access = store.accessToken?.takeIf { it.isNotBlank() } ?: return null
         val refresh = store.refreshToken?.takeIf { it.isNotBlank() && it != "web" } ?: return null
-        return Session(access, refresh, store.userName, store.userId, store.schoolId)
+        return Session(access, refresh, store.userName, store.userId, store.schoolId, store.userEmail)
+    }
+
+    suspend fun refreshAccountIdentity(): Session? {
+        val identity = authorized { api.getAccountInfo(it) }
+        val own = listOfNotNull(identity.parent, identity.child).firstOrNull { it.userId == store.userId }
+        if (own != null) {
+            listOfNotNull(own.firstname, own.lastname).filter { it.isNotBlank() }.joinToString(" ")
+                .takeIf { it.isNotBlank() }?.let { store.userName = it }
+            own.email?.takeIf { it.isNotBlank() }?.let { store.userEmail = it }
+        }
+        return currentSession()
     }
 
     suspend fun refreshIfNeeded(): Boolean = withContext(Dispatchers.IO) {
@@ -113,7 +127,22 @@ class AuthRepository(private val api: AuthApi, private val store: AuthSessionSto
         return withContext(Dispatchers.Default) { MobileTimetableMapper.map(response, child, start, end) }
     }
 
+    private fun gradesKey(childUuid: String, hasPlus: Boolean, schoolYear: String?): String =
+        "${store.userId}:$childUuid:$hasPlus:${gradeSchoolYearStart(schoolYear, LocalDate.now(SCHOOL_ZONE))}"
+
+    suspend fun cachedGrades(childUuid: String, hasPlus: Boolean, schoolYear: String?): MobileGrades? =
+        withContext(Dispatchers.IO) {
+            runCatching { com.google.gson.Gson().fromJson(store.readGrades(gradesKey(childUuid, hasPlus, schoolYear)), MobileGrades::class.java) }.getOrNull()
+        }
+
     suspend fun getMobileGrades(childUuid: String, hasPlus: Boolean = false, schoolYear: String? = null,
+        onProgress: (Int) -> Unit = {}): MobileGrades = withContext(Dispatchers.IO) {
+        val result = fetchMobileGrades(childUuid, hasPlus, schoolYear, onProgress)
+        if (result.historyComplete) store.writeGrades(gradesKey(childUuid, hasPlus, schoolYear), com.google.gson.Gson().toJson(result))
+        result
+    }
+
+    private suspend fun fetchMobileGrades(childUuid: String, hasPlus: Boolean = false, schoolYear: String? = null,
         onProgress: (Int) -> Unit = {}): MobileGrades {
         var notice: String? = null
         if (hasPlus) {

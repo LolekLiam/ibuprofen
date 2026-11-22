@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -68,18 +69,19 @@ internal fun PersonalTimetableScreen(auth: AuthRepository, profileUi: ProfileUi,
     val shortDate = DateTimeFormatter.ofPattern("d MMM")
     val shownDays = schedule?.week?.days.orEmpty().filter { selectedDay == "all" || it.date.toString() == selectedDay }
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
-        item { ScreenTitle("My schedule", onRefresh = {
+        item { ScreenTitle("Schedule", onRefresh = {
             if (child == null) profileUi.onRetry() else revision++
         }, loading = loading) }
-        item { StudentSelector(profileUi) }
+        if (child == null) item { StudentSelector(profileUi) }
         if (child != null) {
             item {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { start = weeks[index - 1].from }, enabled = index > 0 && !loadingWeeks,
                         modifier = Modifier.semantics { contentDescription = "Previous week" }) { Text("‹", style = MaterialTheme.typography.headlineMedium) }
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(selectedWeek?.let { "${LocalDate.parse(it.from).format(shortDate)} – ${LocalDate.parse(it.to).format(shortDate)}" }
-                            ?: "School week", style = MaterialTheme.typography.titleSmall)
+                        WeekCalendarLabel(weeks.associate { LocalDate.parse(it.from) to it.from }, start?.let(LocalDate::parse),
+                            onSelect = { start = it }, label = selectedWeek?.let { "${LocalDate.parse(it.from).format(shortDate)} – ${LocalDate.parse(it.to).format(shortDate)}" }
+                            ?: "School week")
                         if (current != null && current.from != start) TextButton(onClick = { start = current.from }) { Text("This week") }
                     }
                     IconButton(onClick = { start = weeks[index + 1].from }, enabled = index >= 0 && index < weeks.lastIndex && !loadingWeeks,
@@ -90,11 +92,11 @@ internal fun PersonalTimetableScreen(auth: AuthRepository, profileUi: ProfileUi,
             error?.let { message -> item { ErrorNotice(message) { revision++ } } }
             schedule?.let { personal ->
                 item {
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LazyRow(Modifier.fillMaxWidth().nestedScroll(DayStripScrollConnection), horizontalArrangement = DayStripArrangement) {
                         item { FilterChip(selectedDay == "all", { selectedDay = "all" }, label = { Text("All") }) }
                         items(personal.week.days, key = { it.date.toString() }) { day ->
                             FilterChip(selectedDay == day.date.toString(), { selectedDay = day.date.toString() },
-                                label = { Text("${day.date.format(DateTimeFormatter.ofPattern("EEE"))} ${day.date.dayOfMonth}") })
+                                label = { Text(day.date.format(DateTimeFormatter.ofPattern("EEE"))) })
                         }
                     }
                 }

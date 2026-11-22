@@ -22,16 +22,19 @@ class GradesTest {
         override var userId: String? = "15"
         override var schoolId: Int? = 777
         override val deviceId = "synthetic-device"
-        override fun clear() { accessToken = null; refreshToken = null }
+        private val grades = mutableMapOf<String, String>()
+        override fun readGrades(key: String) = grades[key]
+        override fun writeGrades(key: String, value: String) { grades[key] = value }
+        override fun clear() { accessToken = null; refreshToken = null; grades.clear() }
     }
-    private fun repository(seen: MutableList<Request>, reply: (Request) -> Pair<Int, String>): AuthRepository {
+    private fun repository(seen: MutableList<Request>, store: Store = Store(), reply: (Request) -> Pair<Int, String>): AuthRepository {
         val client = OkHttpClient.Builder().addInterceptor(MobileApiInterceptor()).addInterceptor { chain ->
             val r = chain.request(); synchronized(seen) { seen.add(r) }
             val (status, body) = reply(r)
             Response.Builder().request(r).code(status).protocol(Protocol.HTTP_1_1).message("Synthetic fixture").body(body.toResponseBody()).build()
         }.build()
         return AuthRepository(Retrofit.Builder().baseUrl("https://example.invalid/").client(client)
-            .addConverterFactory(GsonConverterFactory.create()).build().create(AuthApi::class.java), Store())
+            .addConverterFactory(GsonConverterFactory.create()).build().create(AuthApi::class.java), store)
     }
     private fun freeReply(request: Request): Pair<Int, String> = 200 to when (request.url.encodedPath) {
         "/m/me/notifications" -> fixture("notifications-first.json")
@@ -39,6 +42,25 @@ class GradesTest {
         "/m/overview/basic" -> fixture("overview.json")
         "/m/grades/concealed" -> fixture("concealed.json")
         else -> error("Unexpected route ${request.url.encodedPath}")
+    }
+
+    @Test fun cacheSurvivesRepositoryRecreationAndIsIsolatedAndCleared() = runBlocking {
+        val store = Store()
+        val repo = repository(mutableListOf(), store) { 200 to fixture("grades-plus.json") }
+        val result = repo.getMobileGrades("child-a", true, "2026/27")
+        val offline = repository(mutableListOf(), store) { 503 to "{}" }
+        assertEquals(gson.toJsonTree(result), gson.toJsonTree(offline.cachedGrades("child-a", true, "2026/27")))
+        assertNull(offline.cachedGrades("child-b", true, "2026/27"))
+        assertNull(offline.cachedGrades("child-a", true, "2025/26"))
+        assertNull(offline.cachedGrades("child-a", false, "2026/27"))
+        store.userId = "other-account"
+        assertNull(offline.cachedGrades("child-a", true, "2026/27"))
+        store.userId = "15"
+        try { offline.getMobileGrades("child-a", true, "2026/27"); fail("Expected failure") }
+        catch (_: MobileApiException) { }
+        assertEquals(gson.toJsonTree(result), gson.toJsonTree(offline.cachedGrades("child-a", true, "2026/27")))
+        store.clear()
+        assertNull(offline.cachedGrades("child-a", true, "2026/27"))
     }
 
     @Test fun plusUsesFullGradebookWithCorrectQueryAndProfileHeaders() = runBlocking {
@@ -64,7 +86,7 @@ class GradesTest {
 
     @Test fun freeReadsOlderPagesDeduplicatesGradesAndExcludesPreviousSchoolYear() = runBlocking {
         val seen = mutableListOf<Request>(); val progress = mutableListOf<Int>()
-        val result = repository(seen, ::freeReply).getMobileGrades("example-child", false, "2026/27") { progress.add(it) }
+        val result = repository(seen, reply = ::freeReply).getMobileGrades("example-child", false, "2026/27") { progress.add(it) }
         assertEquals(GradeSource.Notifications, result.source)
         assertTrue(result.historyComplete)
         assertEquals(listOf(1, 2), progress)

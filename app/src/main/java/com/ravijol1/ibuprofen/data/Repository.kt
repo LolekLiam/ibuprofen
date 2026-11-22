@@ -43,7 +43,7 @@ class TimetableRepository(private val api: EAsistentApi) {
         val res = api.getSchoolPage(schoolKey)
         val body = res.body() ?: error("Empty school page")
         if (!res.isSuccessful) error("School page: HTTP ${res.code()}")
-        return SchoolPageParser.parse(body, schoolKey)
+        return withContext(Dispatchers.Default) { SchoolPageParser.parse(body, schoolKey) }
     }
 
     suspend fun loadTimetableWeek(schoolKey: String, classId: Int, weekId: Int, useProxy: Boolean = true): TimetableWeek {
@@ -58,7 +58,7 @@ class TimetableRepository(private val api: EAsistentApi) {
                 println("[DEBUG_LOG] TimetableRepository.loadTimetableWeek: proxy response code=${res.code()}")
                 if (res.isSuccessful) {
                     val body = res.body()?.data ?: error("Empty timetable from proxy")
-                    val parsed = body.toDomain(classId)
+                    val parsed = withContext(Dispatchers.Default) { body.toDomain(classId) }
                     weekCache[key] = parsed
                     return parsed
                 }
@@ -89,11 +89,13 @@ class TimetableRepository(private val api: EAsistentApi) {
                 val response = proxy.getSchoolTimetables(schoolKey, weekId)
                 if (response.isSuccessful) response.body()?.let { envelope ->
                     val missing = envelope.meta?.missing_class_ids.orEmpty().toSet()
+                    withContext(Dispatchers.Default) {
                     envelope.data.filter { it.classId !in missing }.forEach { cached ->
                         val cls = classes.firstOrNull { it.id == cached.classId } ?: return@forEach
                         val week = cached.toDomain(cls.id)
                         ready[cls.id] = annotateWeekWithClassLabel(week, cls.label)
                         weekCache[Triple(schoolKey, cls.id, weekId)] = week
+                    }
                     }
                 }
             } catch (e: Exception) {

@@ -12,8 +12,6 @@ object SchoolPageParser {
 
     fun parse(html: String, schoolKey: String): SchoolMeta {
         val doc = Jsoup.parse(html)
-        // The requested public key is the school's identifier; no numeric ID is required.
-
         val classes = doc.select("#id_parameter > option").mapNotNull { opt ->
             val id = opt.attr("value").toIntOrNull() ?: return@mapNotNull null
             if (id <= 0 || opt.parents().any { it.tagName() == "optgroup" }) return@mapNotNull null
@@ -165,7 +163,11 @@ object TimetableParser {
         val cancelled = isCancelledCell || block.selectFirst(".wl-tag-cancelled") != null
 
         if (subjectCode == null && subjectTitle == null && teacher == null && room == null && group == null) return null
-        return Lesson(subjectCode, subjectTitle, teacher, room, group, cancelled, teacherFullName, null)
+        val substitution = block.selectFirst(".wl-tag-substitution")
+        return Lesson(subjectCode, subjectTitle, teacher, room, group, cancelled, teacherFullName, null,
+            isSubstitution = substitution != null,
+            change = substitution?.let { LessonChange(LessonChangeKind.Substitution,
+                description = it.attr("title").takeIf(String::isNotBlank)) })
     }
 
     private fun inferYearForDay(weekStart: LocalDate, weekEnd: LocalDate, d: Int?, m: Int?): Int {

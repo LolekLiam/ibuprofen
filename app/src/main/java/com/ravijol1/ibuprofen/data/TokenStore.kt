@@ -22,6 +22,10 @@ class TokenStore(context: Context) : AuthSessionStore {
         get() = prefs.getString(KEY_USER_NAME, null)
         set(value) { prefs.edit { putString(KEY_USER_NAME, value) } }
 
+    override var userEmail: String?
+        get() = prefs.getString("user_email", null)
+        set(value) { prefs.edit { putString("user_email", value) } }
+
     override var userId: String?
         get() = prefs.getString(KEY_USER_ID, null)
         set(value) { prefs.edit { putString(KEY_USER_ID, value) } }
@@ -34,6 +38,9 @@ class TokenStore(context: Context) : AuthSessionStore {
         get() = prefs.getString("device_id", null) ?: ("ibuprofen-" + java.util.UUID.randomUUID()).also {
             prefs.edit { putString("device_id", it) }
         }
+
+    override fun readGrades(key: String): String? = prefs.getString("grades:$key", null)
+    override fun writeGrades(key: String, value: String) { prefs.edit { putString("grades:$key", value) } }
 
     override fun clear() {
         val id = deviceId

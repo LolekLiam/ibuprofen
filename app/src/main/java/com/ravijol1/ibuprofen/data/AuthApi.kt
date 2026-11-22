@@ -14,6 +14,9 @@ interface AuthApi {
     suspend fun logout(@Query("device_id") deviceId: String,
         @Header("Authorization") authHeader: String?): Response<Unit>
 
+    @GET("m/accounts/parent/info")
+    suspend fun getAccountInfo(@Header("Authorization") authHeader: String): Response<AccountInfoResponse>
+
     @GET("m/v3/children")
     suspend fun getChildren(@Header("Authorization") authHeader: String): Response<ChildrenResponse>
 

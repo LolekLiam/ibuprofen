@@ -9,13 +9,17 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.ui.unit.dp
 import com.ravijol1.ibuprofen.data.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -54,12 +58,13 @@ internal fun PublicTimetableScreen(
         ScheduleView.Teacher -> teacher
         ScheduleView.Room -> room
     }
-    val knownWeeks = schoolWeeks.values.flatMap { it.weeks }
-    val options = when (mode) {
+    val loadedWeeks = schoolWeeks.toMap()
+    val knownWeeks = remember(loadedWeeks) { loadedWeeks.values.flatMap { it.weeks } }
+    val options = remember(mode, meta, knownWeeks) { when (mode) {
         ScheduleView.Class -> meta?.classes.orEmpty().map { it.label }
         ScheduleView.Teacher -> TimetableAggregation.teachers(knownWeeks)
         ScheduleView.Room -> TimetableAggregation.rooms(knownWeeks)
-    }
+    } }
     fun refresh(retryMissing: Boolean = false) {
         if (retryMissing) schoolWeeks.remove(weekId) else {
             repository.clearAllCaches()
@@ -93,8 +98,8 @@ internal fun PublicTimetableScreen(
                     failedClasses = result.failedClasses
                     check(result.weeks.isNotEmpty()) { "Could not load the school timetables. Please try again." }
                     when (mode) {
-                        ScheduleView.Teacher -> teacher?.let { TimetableAggregation.forTeacher(result.weeks, it) }
-                        ScheduleView.Room -> room?.let { TimetableAggregation.forRoom(result.weeks, it) }
+                        ScheduleView.Teacher -> teacher?.let { withContext(Dispatchers.Default) { TimetableAggregation.forTeacher(result.weeks, it) } }
+                        ScheduleView.Room -> room?.let { withContext(Dispatchers.Default) { TimetableAggregation.forRoom(result.weeks, it) } }
                         else -> null
                     }
                 }
@@ -132,7 +137,7 @@ internal fun PublicTimetableScreen(
                 Column(Modifier.weight(1f)) {
                     Text("Timetable", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                     Text(meta?.schoolName ?: "eAsistent", style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE), maxLines = 1, overflow = TextOverflow.Clip)
                 }
                 IconButton(onClick = { refresh() }, enabled = !loading && !schoolLoading,
                     modifier = Modifier.semantics { contentDescription = "Refresh timetable" }) {
@@ -156,7 +161,7 @@ internal fun PublicTimetableScreen(
                     Column(Modifier.weight(1f)) {
                         Text(mode.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(entity ?: "Choose a ${mode.label.lowercase()}", style = MaterialTheme.typography.titleMedium,
-                            maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE), maxLines = 1, overflow = TextOverflow.Clip)
                     }
                     Text("⌄", style = MaterialTheme.typography.titleLarge)
                 }
@@ -167,8 +172,10 @@ internal fun PublicTimetableScreen(
                 IconButton(onClick = { previousWeek?.let { weekId = it } }, enabled = previousWeek != null,
                     modifier = Modifier.semantics { contentDescription = "Previous week" }) { Text("‹", style = MaterialTheme.typography.headlineMedium) }
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(week?.let { "${it.weekStart.format(shortDate)} – ${it.weekEnd.format(shortDate)}" }
-                        ?: if (weekId == 0) "Current week" else "Week $weekId", style = MaterialTheme.typography.titleSmall)
+                    WeekCalendarLabel(week?.let { anchor -> weeks.associate { id -> anchor.weekStart.plusWeeks((id - shownId).toLong()) to id } }.orEmpty(),
+                        week?.weekStart, onSelect = { weekId = it },
+                        label = week?.let { "${it.weekStart.format(shortDate)} – ${it.weekEnd.format(shortDate)}" }
+                        ?: if (weekId == 0) "Current week" else "Week $weekId")
                     if (shownId != currentWeek) TextButton(onClick = { weekId = currentWeek }) { Text("This week") }
                 }
                 IconButton(onClick = { nextWeek?.let { weekId = it } }, enabled = nextWeek != null,
@@ -200,14 +207,14 @@ internal fun PublicTimetableScreen(
         }
         if (week != null) {
             item {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyRow(Modifier.fillMaxWidth().nestedScroll(DayStripScrollConnection), horizontalArrangement = DayStripArrangement) {
                     item {
                         FilterChip(selected = selectedDay == "all", onClick = { selectedDay = "all" }, label = { Text("All") })
                     }
                     items(week.days, key = { it.date.toString() }) { timetableDay ->
                         FilterChip(selected = timetableDay.date.toString() == selectedDay,
                             onClick = { selectedDay = timetableDay.date.toString() },
-                            label = { Text("${timetableDay.date.format(dayFormat)} ${timetableDay.date.dayOfMonth}") })
+                            label = { Text(timetableDay.date.format(dayFormat)) })
                     }
                 }
             }

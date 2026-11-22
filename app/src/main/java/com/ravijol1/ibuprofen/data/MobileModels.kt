@@ -2,6 +2,7 @@ package com.ravijol1.ibuprofen.data
 
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
+import org.jsoup.Jsoup
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -37,40 +38,48 @@ data class MobileEvent(
     @SerializedName("is_substitution") val isSubstitution: Boolean = false,
     @SerializedName("is_cancelled") val isCancelled: Boolean = false,
     @SerializedName("type_label") val typeLabel: String?,
-    val description: String?
+    val description: String?,
+    @SerializedName("original_subject") val originalSubject: String? = null,
+    @SerializedName("type_labels") val typeLabels: List<MobileEventTypeLabel>? = null
 )
+data class MobileEventTypeLabel(@SerializedName("type_label") val label: String?)
 data class PersonalSchedule(val week: TimetableWeek, val events: List<MobileEvent>)
 
 object MobileTimetableMapper {
     fun map(response: MobileTimetableResponse, child: ChildProfile, start: LocalDate, end: LocalDate): PersonalSchedule {
         require(!end.isBefore(start))
         val inRange = response.events.filter { LocalDate.parse(it.date) in start..end }.distinctBy { it.slug }
-        val lessons = inRange.filter { it.type == "school_hour" || it.isSubstitution }
+        val lessons = inRange.filter { it.type == "school_hour" || mobileLessonChangeKind(it) != null }
         val days = generateSequence(start) { it.plusDays(1) }.takeWhile { !it.isAfter(end) }.map { date ->
             val cells = lessons.filter { it.date == date.toString() }.groupBy { it.from to it.to }
                 .entries.sortedBy { LocalTime.parse(it.key.first) }.map { (time, events) ->
                     val first = events.first()
-                    val index = first.scheduleIndices.firstOrNull()
+                    val index = first.scheduleIndices.orEmpty().firstOrNull()
+                        ?: response.schedule.indexOfFirst { LocalTime.parse(it.from) == LocalTime.parse(time.first) }.takeIf { it >= 0 }
                     val period = index?.let { response.schedule.getOrNull(it) }
                     val number = period?.shortName?.toIntOrNull()
                         ?: period?.name?.substringBefore('.')?.toIntOrNull() ?: index ?: 0
                     PeriodCell.WithLessons(number, LocalTime.parse(time.first)..LocalTime.parse(time.second), events.map { event ->
+                        val kind = mobileLessonChangeKind(event)
+                        val change = kind?.let { LessonChange(it,
+                            event.originalSubject?.let { value -> Jsoup.parseBodyFragment(value).text().takeIf(String::isNotBlank) },
+                            event.description?.let { value -> Jsoup.parseBodyFragment(value).text().takeIf(String::isNotBlank) }) }
                         Lesson(event.subject?.shortTitle ?: event.shortTitle, event.subject?.title ?: event.title,
-                            event.teachers.joinToString(", ").ifBlank { null }, event.classroom?.ifBlank { null },
-                            null, event.isCancelled, event.teachers.joinToString(", ").ifBlank { null },
-                            child.className, child.classId?.toString(), event.isSubstitution,
-                            event.notes.mapNotNull { note -> when {
+                            event.teachers.orEmpty().joinToString(", ").ifBlank { null }, event.classroom?.ifBlank { null },
+                            null, event.isCancelled, event.teachers.orEmpty().joinToString(", ").ifBlank { null },
+                            child.className, child.classId?.toString(), kind == LessonChangeKind.Substitution,
+                            event.notes.orEmpty().mapNotNull { note -> when {
                                 note.isJsonPrimitive && note.asJsonPrimitive.isString -> note.asString
                                 note.isJsonObject -> listOf("text", "title", "description").firstNotNullOfOrNull { key ->
                                     note.asJsonObject.get(key)?.takeIf { it.isJsonPrimitive }?.asString
                                 }
                                 else -> null
-                            }} + listOfNotNull(event.typeLabel?.takeUnless { event.isSubstitution }))
+                            }} + listOfNotNull(event.typeLabel?.takeIf { kind == null }), change)
                     })
                 }
             TimetableDay(date, cells)
         }.toList()
-        return PersonalSchedule(TimetableWeek(child.classId ?: 0, start, end, days), inRange.filter { it.type != "school_hour" && !it.isSubstitution })
+        return PersonalSchedule(TimetableWeek(child.classId ?: 0, start, end, days), inRange.filter { it.type != "school_hour" && mobileLessonChangeKind(it) == null })
     }
 }
 

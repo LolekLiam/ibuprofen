@@ -6,6 +6,10 @@ import androidx.core.content.edit
 class SettingsStore(context: Context) { 
     private val prefs = SecurePreferences.open(context, PREF_NAME)
 
+    var themeMode: String
+        get() = prefs.getString("theme_mode", "System")?.takeIf { it in listOf("System", "Light", "Dark") } ?: "System"
+        set(value) { prefs.edit { putString("theme_mode", value) } }
+
     var remindersEnabled: Boolean
         get() = prefs.getBoolean(KEY_REMINDERS_ENABLED, false)
         set(value) { prefs.edit { putBoolean(KEY_REMINDERS_ENABLED, value) } }

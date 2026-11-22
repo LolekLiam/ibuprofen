@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.ui.unit.dp
 import com.ravijol1.ibuprofen.data.ChildProfile
 
@@ -64,7 +65,7 @@ internal fun StudentSelector(ui: ProfileUi) {
                         Text(ui.selected?.displayName ?: "Choose a student", style = MaterialTheme.typography.titleMedium)
                         val detail = listOfNotNull(ui.selected?.className, ui.selected?.schoolName).joinToString(" · ")
                         if (detail.isNotBlank()) Text(detail, style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE), maxLines = 1, overflow = TextOverflow.Clip)
                     }
                     if (ui.profiles.size > 1) Text("⌄", style = MaterialTheme.typography.titleLarge)
                 }
