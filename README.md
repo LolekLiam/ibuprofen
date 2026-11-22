@@ -1,5 +1,5 @@
 # ibuprofen
-Odprtokodna aplikacija za Android, ki omogoča vpogled v urnike eAsistenta
+Odprtokodna aplikacija za Android, ki omogoča vpogled v urnike eAsistenta.
 
 # Features
 
@@ -7,9 +7,6 @@ Odprtokodna aplikacija za Android, ki omogoča vpogled v urnike eAsistenta
 - Public eAsistent timetables for multiple schools, with class, teacher and room views.
 - Week navigation and clear lesson cards.
 - eAsistent mobile account sign-in, personal timetables and grades.
-- Configurable lesson reminders.
-- Optional self-hosted proxy with timetable caching and direct upstream fallback.
-- Server administration shown when the proxy is enabled: separate admin sign-in, school registration and synchronization progress.
 
 # Building and self-hosting
 
@@ -19,7 +16,7 @@ Open this project in Android Studio, configure your Android SDK, and build the `
 ./gradlew :app:assembleDebug
 ```
 
-The APK is generated in `app/build/outputs/apk/debug/`. The proxy is optional; see [ibuprofen API](https://github.com/LolekLiam/ibuprofen-api) for server installation and app configuration. HTTP LAN URLs and HTTPS URLs are supported.
+The APK is generated in `app/build/outputs/apk/debug/`.
 
 # License
 
@@ -30,19 +27,17 @@ The APK is generated in `app/build/outputs/apk/debug/`. The proxy is optional; s
 
 [@chocoearly44](https://github.com/chocoearly44) za [JEA](https://github.com/chocoearly44/JEA)
 
+[@StormPacer](https://github.com/StormPacer) za UI ideje
+
 Special thanks to eAsistent dev team za NIČ ker nimate javnega API-ja in ker gatekeepate naše redovalnice.
 
 # TODO
-- ~fix ui~
-- ~optimize~
-- ~fix ux~
-- ~add easistent auth~
-- ~fuck easistent, free redovalnice za vse~
-- ~add support for parent login~
 - switch endpoints from mobile to web?
 - add support for other schools
 - see upcoming tests
 - schedule customization
+- safe re-login storage
+- expand to webui?
 
 # Disclaimer
 This project was created by observing publicly visible network traffic in the eAsistent web application.
@@ -51,7 +46,7 @@ All communication happens entirely through publicly accessible endpoints.
 
 This project is not affiliated with or endorsed by eŠola d.o.o.
 This app merely provides an alternative interface for users to view their own educational data.
-Personal account communication occurs directly between the user and the official eAsistent servers. Public timetables can optionally pass through a self-hosted proxy configured by the user.
+Personal account communication occurs directly between the user and the official eAsistent servers.
 No credentials or personal data are sent to third-party servers.
 Users are responsible for ensuring their use complies with their school's policies.
 All trademarks belong to their respective owners.
