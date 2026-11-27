@@ -15,7 +15,8 @@ interface AuthApi {
         @Header("Authorization") authHeader: String?): Response<Unit>
 
     @GET("m/accounts/parent/info")
-    suspend fun getAccountInfo(@Header("Authorization") authHeader: String): Response<AccountInfoResponse>
+    suspend fun getAccountInfo(@Header("Authorization") authHeader: String,
+        @Header("X-Child-Id") childUuid: String? = null): Response<AccountInfoResponse>
 
     @GET("m/v3/children")
     suspend fun getChildren(@Header("Authorization") authHeader: String): Response<ChildrenResponse>

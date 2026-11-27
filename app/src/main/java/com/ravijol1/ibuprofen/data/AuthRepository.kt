@@ -2,6 +2,7 @@ package com.ravijol1.ibuprofen.data
 
 import com.google.gson.JsonParser
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -13,7 +14,7 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 class SessionExpiredException : IllegalStateException("Your session expired. Please sign in again.")
-class MobileApiException(val status: Int, message: String) : IllegalStateException(message)
+class MobileApiException(val status: Int, message: String, val serverCode: Int? = null) : IllegalStateException(message)
 
 object TokenExpiry {
     fun needsRefresh(expiration: String?, now: Instant = Instant.now()): Boolean {
@@ -30,14 +31,17 @@ class AuthRepository(private val api: AuthApi, private val store: AuthSessionSto
         val userId: String?, val schoolId: Int?, val email: String? = null)
     companion object { private val refreshMutex = Mutex() }
 
-    suspend fun login(username: String, password: String): Session = withContext(Dispatchers.IO) {
+    suspend fun login(username: String, password: String, expectedUserId: String? = null): Session = withContext(Dispatchers.IO) {
         require(username.isNotBlank() && password.isNotEmpty()) { "Enter your username and password." }
         val body = successful(api.login(LoginRequest(username.trim(), password)))
         require(!body.accessToken?.token.isNullOrBlank() && !body.refreshToken.isNullOrBlank()) {
             "The server did not return a mobile session. Additional account verification may be required."
         }
+        val verifiedId = body.user?.id?.toString() ?: JwtUtils.parsePayload(body.accessToken.token)?.userId
+        require(expectedUserId == null || verifiedId == expectedUserId) { "Enter the password for the currently signed-in account." }
         refreshMutex.withLock {
-            store.clear()
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            if (expectedUserId == null) store.clear()
             saveTokens(body.accessToken, body.refreshToken)
             store.userName = listOfNotNull(body.user?.firstname, body.user?.lastname).filter { it.isNotBlank() }
                 .joinToString(" ").ifBlank { body.user?.name ?: username.trim() }
@@ -61,8 +65,8 @@ class AuthRepository(private val api: AuthApi, private val store: AuthSessionSto
         return Session(access, refresh, store.userName, store.userId, store.schoolId, store.userEmail)
     }
 
-    suspend fun refreshAccountIdentity(): Session? {
-        val identity = authorized { api.getAccountInfo(it) }
+    suspend fun refreshAccountIdentity(childUuid: String? = null): Session? {
+        val identity = authorized { api.getAccountInfo(it, childUuid) }
         val own = listOfNotNull(identity.parent, identity.child).firstOrNull { it.userId == store.userId }
         if (own != null) {
             listOfNotNull(own.firstname, own.lastname).filter { it.isNotBlank() }.joinToString(" ")
@@ -194,18 +198,20 @@ class AuthRepository(private val api: AuthApi, private val store: AuthSessionSto
     private fun <T> successful(response: Response<T>): T {
         if (!response.isSuccessful) {
             val text = response.errorBody()?.string()
-            val message = runCatching {
-                val json = JsonParser.parseString(text).asJsonObject
-                listOf("message", "user_message", "developer_message").firstNotNullOfOrNull { key ->
-                    json.get(key)?.takeIf { it.isJsonPrimitive }?.asString
+            val payload = runCatching { JsonParser.parseString(text).asJsonObject }.getOrNull()
+            val nested = payload?.get("error")?.takeIf { it.isJsonObject }?.asJsonObject
+            val message = listOfNotNull(nested, payload).firstNotNullOfOrNull { json ->
+                listOf("user_message", "message", "developer_message").firstNotNullOfOrNull { key ->
+                    json.get(key)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString?.takeIf(String::isNotBlank)
                 }
-            }.getOrNull()
+            }
+            val code = runCatching { nested?.get("code")?.asInt ?: payload?.get("code")?.asInt }.getOrNull()
             throw MobileApiException(response.code(), message ?: when (response.code()) {
                 401 -> "Sign-in failed. Check your username and password."
                 403 -> "This information is unavailable for your account."
                 429 -> "Too many requests. Please try again in a moment."
                 else -> "eAsistent returned HTTP ${response.code()}. Please try again."
-            })
+            }, code)
         }
         return response.body() ?: error("eAsistent returned an empty response.")
     }

@@ -16,10 +16,10 @@ import java.time.format.DateTimeFormatter
 @Composable
 internal fun LessonPeriodCard(cell: PeriodCell.WithLessons, showClasses: Boolean = false) {
     val clock = DateTimeFormatter.ofPattern("HH:mm")
-    val changes = cell.lessons.filter { it.changeKind != null }
+    val hasDetails = cell.lessons.any { it.changeKind != null || it.isCancelled || it.assessment != null || it.homework.orEmpty().isNotEmpty() }
     var showChanges by remember(cell) { mutableStateOf(false) }
-    val interaction = if (changes.isEmpty()) Modifier else Modifier.clickable(role = Role.Button,
-        onClickLabel = "Show lesson changes", onClick = { showChanges = true })
+    val interaction = if (!hasDetails) Modifier else Modifier.clickable(role = Role.Button,
+        onClickLabel = "Show lesson details", onClick = { showChanges = true })
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp).then(interaction),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -53,6 +53,9 @@ internal fun LessonPeriodCard(cell: PeriodCell.WithLessons, showClasses: Boolean
                         if (lesson.changeKind == null) lesson.notes.distinct().forEach { note ->
                             Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
+                        lessonWorkSummary(lesson.assessment, lesson.homework.orEmpty()).takeIf(String::isNotBlank)?.let {
+                            Text("$it ⓘ", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                        }
                         if (lesson.isCancelled) Text("Cancelled", color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.labelLarge)
                     }
@@ -60,34 +63,33 @@ internal fun LessonPeriodCard(cell: PeriodCell.WithLessons, showClasses: Boolean
             }
         }
     }
-    if (showChanges) LessonChangesSheet(cell, changes) { showChanges = false }
+    if (showChanges) LessonDetailsSheet(cell) { showChanges = false }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LessonChangesSheet(cell: PeriodCell.WithLessons, changes: List<Lesson>, onDismiss: () -> Unit) {
+private fun LessonDetailsSheet(cell: PeriodCell.WithLessons, onDismiss: () -> Unit) {
     val clock = DateTimeFormatter.ofPattern("HH:mm")
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item {
-                Text(changes.singleOrNull()?.changeKind?.label ?: "Lesson changes", style = MaterialTheme.typography.titleLarge)
+                Text(cell.lessons.singleOrNull()?.changeKind?.label ?: "Lesson details", style = MaterialTheme.typography.titleLarge)
                 Text(listOfNotNull(cell.periodNumber.takeIf { it > 0 }?.let { "Period $it" },
                     "${cell.timeRange.start.format(clock)} – ${cell.timeRange.endInclusive.format(clock)}").joinToString(" · "),
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            changes.forEachIndexed { index, lesson ->
+            cell.lessons.forEachIndexed { index, lesson ->
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (index > 0) HorizontalDivider(Modifier.padding(bottom = 8.dp))
-                        if (changes.size > 1) Text(lesson.changeKind?.label.orEmpty(), style = MaterialTheme.typography.labelLarge)
-                        lesson.change?.originalSubject?.takeIf { it.isNotBlank() }?.let { original ->
-                            Text("Originally scheduled", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(original, style = MaterialTheme.typography.titleMedium)
-                        } ?: Text("Original lesson details are not provided.", style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(if (lesson.changeKind == LessonChangeKind.Assignment) "Activity" else "Replacement lesson",
-                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        lesson.changeKind?.let { kind ->
+                            Text(kind.label, style = MaterialTheme.typography.labelLarge)
+                            lesson.change?.originalSubject?.takeIf { it.isNotBlank() }?.let { original ->
+                                Text("Originally scheduled: $original", style = MaterialTheme.typography.bodyMedium)
+                            } ?: Text("Original lesson details are not provided.", style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                         Text(lesson.subjectTitle ?: lesson.subjectCode ?: "Lesson", style = MaterialTheme.typography.titleMedium)
                         (lesson.teacherFullName ?: lesson.teacher)?.takeIf { it.isNotBlank() }?.let { Text("Teacher: $it") }
                         lesson.room?.takeIf { it.isNotBlank() }?.let { Text("Room: $it") }
@@ -95,6 +97,7 @@ private fun LessonChangesSheet(cell: PeriodCell.WithLessons, changes: List<Lesso
                         lesson.groupLabel?.let { Text(it) }
                         (listOfNotNull(lesson.change?.description) + lesson.notes).filter { it.isNotBlank() }.distinct().forEach { Text(it) }
                         if (lesson.isCancelled) Text("Cancelled", color = MaterialTheme.colorScheme.error)
+                        LessonWorkDetails(lesson.assessment, lesson.homework.orEmpty())
                     }
                 }
             }

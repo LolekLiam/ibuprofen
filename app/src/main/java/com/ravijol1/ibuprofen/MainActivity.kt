@@ -10,7 +10,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -41,7 +41,7 @@ import kotlinx.coroutines.CancellationException
 
 enum class AppTab { Login, Public, Child, Grades, Settings }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -68,6 +68,7 @@ fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, j
     val context = LocalContext.current
     val tokens = remember { TokenStore(context.applicationContext) }
     val settings = remember { SettingsStore(context.applicationContext) }
+    val updates = rememberUpdateUi(settings)
     val auth = remember { AuthRepository(NetworkProvider.authApi, tokens) }
     var session by remember { mutableStateOf(auth.currentSession()) }
     val tabs = listOf(AppTab.Public, AppTab.Child, AppTab.Grades, AppTab.Login, AppTab.Settings)
@@ -219,21 +220,25 @@ fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, j
             }
         }
     }) { padding ->
-        HorizontalPager(state = pager, modifier = Modifier.fillMaxSize().padding(padding), key = { tabs[it].name }) { page ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            AppUpdateNotice(updates) { url -> context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+            HorizontalPager(state = pager, modifier = Modifier.fillMaxWidth().weight(1f), key = { tabs[it].name }) { page ->
             Box(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
                 viewState.SaveableStateProvider(tabs[page].name) {
                     when (tabs[page]) {
                     AppTab.Public -> PublicTimetableScreen(school, schoolLoading, schoolError, { schoolRevision++ }, settings)
                     AppTab.Login -> AccountScreen(auth, session, profiles, profilesLoading, profilesError,
+                        active = pager.settledPage == page && !pager.isScrollInProgress,
+                        onSessionUpdated = { session = it },
                         onSignedIn = {
                             disableReminders(); settings.clearChild(); selectedUuid = null
                             profiles = emptyList(); session = it; profilesRevision++
                         }, onSignedOut = { sessionExpired() },
-                        onChooseProfile = { persistChild(it); navigate(AppTab.Child) })
-                    AppTab.Child -> PersonalTimetableScreen(auth, profileUi, jumpToChildDate, onSessionExpired = { sessionExpired() })
+                        onChooseProfile = { persistChild(it); navigate(AppTab.Child) }, selectedChildUuid = child?.uuid)
+                    AppTab.Child -> PersonalTimetableScreen(auth, profileUi, jumpToChildDate, settings, onSessionExpired = { sessionExpired() })
                     AppTab.Grades -> GradesScreen(auth, profileUi, onSessionExpired = { sessionExpired() })
                     AppTab.Settings -> SettingsScreen(reminders, remindersError, child, proxyEnabled, proxyUrl,
-                        themeMode = themeMode, onThemeChange = onThemeChange,
+                        themeMode = themeMode, onThemeChange = onThemeChange, updates = updates,
                         exactAlarmsAllowed = exactAlarmsAllowed, notificationsAllowed = notificationsAllowed,
                         onAllowPreciseReminders = { requestPreciseReminders() },
                         onOpenNotificationSettings = { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
@@ -251,6 +256,7 @@ fun TimetableScreen(modifier: Modifier = Modifier, initialTab: AppTab? = null, j
                 }
                 }
             }
+        }
         }
     }
 }

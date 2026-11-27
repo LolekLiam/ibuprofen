@@ -49,14 +49,19 @@ internal object ReminderAlarms {
     @Synchronized fun lesson(ctx: Context, epoch: Long): LessonReminder? {
         val stored = read(ctx) ?: return null
         if (stored.childUuid != SettingsStore(ctx).selectedChildUuid) return null
-        return stored.reminders.firstOrNull { it.startEpoch == epoch }
+        val reminder = stored.reminders.firstOrNull { it.startEpoch == epoch } ?: return null
+        return visibleGroupReminder(reminder, SettingsStore(ctx).personalGroups(stored.childUuid))
     }
 
     private fun schedule(ctx: Context, reminders: List<LessonReminder>) {
         val alarm = ctx.getSystemService(AlarmManager::class.java)
         val now = Instant.now().epochSecond
-        val last = SettingsStore(ctx).lastReminderStartEpoch
-        reminders.forEach { reminder ->
+        val settings = SettingsStore(ctx)
+        val last = settings.lastReminderStartEpoch
+        val groups = settings.selectedChildUuid?.let { settings.personalGroups(it) } ?: PersonalGroups()
+        reminders.forEach { raw ->
+            val reminder = visibleGroupReminder(raw, groups)
+            if (reminder == null) { cancel(ctx, raw.startEpoch); return@forEach }
             if (reminder.startEpoch <= now || reminder.startEpoch == last) {
                 cancel(ctx, reminder.startEpoch)
                 return@forEach

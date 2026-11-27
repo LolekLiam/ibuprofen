@@ -36,11 +36,15 @@ data class MobileEvent(
     val notes: List<JsonElement> = emptyList(),
     @SerializedName("schedule_index") val scheduleIndices: List<Int> = emptyList(),
     @SerializedName("is_substitution") val isSubstitution: Boolean = false,
-    @SerializedName("is_cancelled") val isCancelled: Boolean = false,
+    @SerializedName(value = "is_canceled", alternate = ["is_cancelled"]) val isCancelled: Boolean = false,
     @SerializedName("type_label") val typeLabel: String?,
     val description: String?,
     @SerializedName("original_subject") val originalSubject: String? = null,
-    @SerializedName("type_labels") val typeLabels: List<MobileEventTypeLabel>? = null
+    @SerializedName("type_labels") val typeLabels: List<MobileEventTypeLabel>? = null,
+    val evaluation: LessonAssessment? = null,
+    val homework: List<LessonHomework>? = null,
+    @SerializedName(value = "group_name", alternate = ["group_label", "groupLabel"]) val groupLabel: String? = null,
+    val group: JsonElement? = null
 )
 data class MobileEventTypeLabel(@SerializedName("type_label") val label: String?)
 data class PersonalSchedule(val week: TimetableWeek, val events: List<MobileEvent>)
@@ -49,6 +53,7 @@ object MobileTimetableMapper {
     fun map(response: MobileTimetableResponse, child: ChildProfile, start: LocalDate, end: LocalDate): PersonalSchedule {
         require(!end.isBefore(start))
         val inRange = response.events.filter { LocalDate.parse(it.date) in start..end }.distinctBy { it.slug }
+        val cancellations = resolveMobileCancellations(inRange)
         val lessons = inRange.filter { it.type == "school_hour" || mobileLessonChangeKind(it) != null }
         val days = generateSequence(start) { it.plusDays(1) }.takeWhile { !it.isAfter(end) }.map { date ->
             val cells = lessons.filter { it.date == date.toString() }.groupBy { it.from to it.to }
@@ -66,7 +71,7 @@ object MobileTimetableMapper {
                             event.description?.let { value -> Jsoup.parseBodyFragment(value).text().takeIf(String::isNotBlank) }) }
                         Lesson(event.subject?.shortTitle ?: event.shortTitle, event.subject?.title ?: event.title,
                             event.teachers.orEmpty().joinToString(", ").ifBlank { null }, event.classroom?.ifBlank { null },
-                            null, event.isCancelled, event.teachers.orEmpty().joinToString(", ").ifBlank { null },
+                            mobileGroupLabel(event), event.isCancelled || event.slug in cancellations.lessons, event.teachers.orEmpty().joinToString(", ").ifBlank { null },
                             child.className, child.classId?.toString(), kind == LessonChangeKind.Substitution,
                             event.notes.orEmpty().mapNotNull { note -> when {
                                 note.isJsonPrimitive && note.asJsonPrimitive.isString -> note.asString
@@ -74,12 +79,13 @@ object MobileTimetableMapper {
                                     note.asJsonObject.get(key)?.takeIf { it.isJsonPrimitive }?.asString
                                 }
                                 else -> null
-                            }} + listOfNotNull(event.typeLabel?.takeIf { kind == null }), change)
+                            }} + listOfNotNull(event.typeLabel?.takeIf { kind == null }), change,
+                            event.evaluation, event.homework.orEmpty(), event.subject?.id)
                     })
                 }
             TimetableDay(date, cells)
         }.toList()
-        return PersonalSchedule(TimetableWeek(child.classId ?: 0, start, end, days), inRange.filter { it.type != "school_hour" && mobileLessonChangeKind(it) == null })
+        return PersonalSchedule(TimetableWeek(child.classId ?: 0, start, end, days), inRange.filter { it.type != "school_hour" && mobileLessonChangeKind(it) == null && it.slug !in cancellations.consumedMarkers })
     }
 }
 

@@ -18,12 +18,13 @@ internal data class ProfileUi(val signedIn: Boolean, val profiles: List<ChildPro
     val onSignIn: () -> Unit)
 
 @Composable
-internal fun ScreenTitle(title: String, subtitle: String? = null, onRefresh: (() -> Unit)? = null, loading: Boolean = false) {
+internal fun ScreenTitle(title: String, subtitle: String? = null, onRefresh: (() -> Unit)? = null, loading: Boolean = false, actions: (@Composable () -> Unit)? = null) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
+        actions?.invoke()
         if (onRefresh != null) TextButton(onClick = onRefresh, enabled = !loading) { Text("Refresh") }
     }
 }

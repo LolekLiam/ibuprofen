@@ -23,18 +23,20 @@ class MobileApiTest {
         override var accessExpiration: String? = null
         override var refreshToken: String? = null
         override var userName: String? = null
+        override var userEmail: String? = null
         override var userId: String? = null
         override var schoolId: Int? = null
         override val deviceId = "test-device"
-        override fun clear() { accessToken = null; accessExpiration = null; refreshToken = null; userName = null; userId = null; schoolId = null }
+        override fun clear() { accessToken = null; accessExpiration = null; refreshToken = null; userName = null; userEmail = null; userId = null; schoolId = null }
     }
-    private fun api(requests: ConcurrentLinkedQueue<Request>, status: (Request) -> Int = { 200 }): AuthApi {
+    private fun api(requests: ConcurrentLinkedQueue<Request>, errorBody: String? = null, status: (Request) -> Int = { 200 }): AuthApi {
         val client = OkHttpClient.Builder().addInterceptor(MobileApiInterceptor()).addInterceptor { chain ->
             val request = chain.request(); requests.add(request)
             val code = status(request)
             val json = when (request.url.encodedPath) {
                 "/m/login" -> fixture("login.json")
                 "/m/v3/children" -> fixture("children.json")
+                "/m/accounts/parent/info" -> """{"child":{"user_id":"15","firstname":"Example","lastname":"Student","email":"student@example.invalid"}}"""
                 "/m/school/weeks" -> fixture("weeks.json")
                 "/m/timetable/events" -> fixture("events.json")
                 "/m/overview/basic" -> fixture("overview.json")
@@ -49,10 +51,18 @@ class MobileApiTest {
                 else -> error("Unexpected request")
             }
             Response.Builder().request(request).protocol(Protocol.HTTP_1_1).code(code).message("Fixture")
-                .body((if (code >= 400) "{\"message\":\"Example server error\"}" else json).toResponseBody()).build()
+                .body((if (code >= 400) errorBody ?: "{\"message\":\"Example server error\"}" else json).toResponseBody()).build()
         }.build()
         return Retrofit.Builder().baseUrl("https://example.invalid/").client(client)
             .addConverterFactory(GsonConverterFactory.create()).build().create(AuthApi::class.java)
+    }
+
+    @Test fun savedLoginAccountMismatchDoesNotReplaceActiveSession() = runBlocking {
+        val requests = ConcurrentLinkedQueue<Request>(); val store = MemoryStore(); val repo = AuthRepository(api(requests), store)
+        val before = repo.login("example", "synthetic-password")
+        try { repo.login("other", "synthetic-password", expectedUserId = "different-id"); fail("Expected account mismatch") }
+        catch (_: IllegalArgumentException) { }
+        assertEquals(before, repo.currentSession())
     }
 
     @Test fun syntheticLoginChildrenScheduleAndGradesMatchProtocol() = runBlocking {
@@ -125,6 +135,44 @@ class MobileApiTest {
         repo.login("example", "test-password"); repo.logout()
         assertNull(repo.currentSession())
         assertEquals("test-device", requests.last().url.queryParameter("device_id"))
+    }
+
+    @Test fun accountIdentitySendsSelectedStudentHeaderAndUsesMatchingIdentity() = runBlocking {
+        val requests = ConcurrentLinkedQueue<Request>(); val store = MemoryStore()
+        val repo = AuthRepository(api(requests) { request ->
+            if (request.url.encodedPath == "/m/accounts/parent/info" && request.header("X-Child-Id") == null) 403 else 200
+        }, store)
+        repo.login("example", "synthetic-password")
+        val child = repo.getChildrenProfiles().single()
+        val identity = repo.refreshAccountIdentity(child.uuid)
+        assertEquals(child.uuid, requests.last().header("X-Child-Id"))
+        assertEquals("Example Student", identity?.userName)
+        assertEquals("student@example.invalid", identity?.email)
+    }
+
+    @Test fun nestedApiErrorsPreferUserMessageAndRetainServerCode() = runBlocking {
+        val requests = ConcurrentLinkedQueue<Request>(); val store = MemoryStore()
+        val repo = AuthRepository(api(requests,
+            errorBody = """{"error":{"code":702,"developer_message":"PLUS subscription expired.","user_message":"Subscription required"}}""") {
+            if (it.url.encodedPath == "/m/v3/children") 403 else 200
+        }, store)
+        repo.login("example", "synthetic-password")
+        try { repo.getChildrenProfiles(); fail("Expected API error") }
+        catch (error: MobileApiException) {
+            assertEquals(403, error.status); assertEquals(702, error.serverCode)
+            assertEquals("Subscription required", error.message)
+        }
+        assertNotNull(repo.currentSession())
+    }
+
+    @Test fun nestedDeveloperMessageIsUsedWhenNoUserMessageExists() = runBlocking {
+        val requests = ConcurrentLinkedQueue<Request>(); val store = MemoryStore()
+        val repo = AuthRepository(api(requests, errorBody = """{"error":{"code":601,"developer_message":"Missing X-Child-Id in header."}}""") {
+            if (it.url.encodedPath == "/m/v3/children") 403 else 200
+        }, store)
+        repo.login("example", "synthetic-password")
+        try { repo.getChildrenProfiles(); fail("Expected API error") }
+        catch (error: MobileApiException) { assertEquals(601, error.serverCode); assertEquals("Missing X-Child-Id in header.", error.message) }
     }
 
     @Test fun expirationSupportsTimezoneFormatAndSafetyWindow() {

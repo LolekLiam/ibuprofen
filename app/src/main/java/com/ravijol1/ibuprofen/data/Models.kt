@@ -59,7 +59,10 @@ data class Lesson(
     val sourceClassId: String? = null, // proxy provides this
     val isSubstitution: Boolean = false,
     val notes: List<String> = emptyList(),
-    val change: LessonChange? = null
+    val change: LessonChange? = null,
+    val assessment: LessonAssessment? = null,
+    val homework: List<LessonHomework> = emptyList(),
+    val subjectId: Long? = null
 )
 
 // Proxy response models

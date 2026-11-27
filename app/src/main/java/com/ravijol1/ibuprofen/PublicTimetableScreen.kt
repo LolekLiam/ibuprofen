@@ -1,6 +1,8 @@
 package com.ravijol1.ibuprofen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,6 +23,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 
 private enum class ScheduleView(val label: String, val plural: String) {
@@ -43,6 +46,11 @@ internal fun PublicTimetableScreen(
     var teacher by rememberSaveable { mutableStateOf<String?>(null) }
     var room by rememberSaveable { mutableStateOf<String?>(null) }
     var weekId by rememberSaveable(meta?.schoolKey, meta?.currentWeekId) { mutableIntStateOf(meta?.currentWeekId ?: 0) }
+    var weekView by rememberSaveable(meta?.schoolKey) { mutableStateOf(meta?.schoolKey?.let(settings::publicWeekView) == true) }
+    fun chooseView(weekly: Boolean) {
+        weekView = weekly
+        meta?.schoolKey?.let { settings.setPublicWeekView(it, weekly) }
+    }
     var selectedDay by rememberSaveable { mutableStateOf<String?>(null) }
     var showPicker by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -105,9 +113,10 @@ internal fun PublicTimetableScreen(
                 }
             }
             displayedWeek?.let { week ->
-                if (selectedDay == null || (selectedDay != "all" && week.days.none { it.date.toString() == selectedDay })) {
-                    val today = LocalDate.now()
-                    selectedDay = (week.days.firstOrNull { it.date == today } ?: week.days.firstOrNull())?.date?.toString()
+                if (selectedDay == null || week.days.none { it.date.toString() == selectedDay }) {
+                    val today = LocalDate.now(SCHOOL_ZONE)
+                    selectedDay = (week.days.firstOrNull { it.date == today && it.date.dayOfWeek !in setOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY) }
+                        ?: week.days.firstOrNull { it.date.dayOfWeek !in setOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY) } ?: week.days.firstOrNull())?.date?.toString()
                 }
             }
         } catch (e: CancellationException) {
@@ -128,110 +137,100 @@ internal fun PublicTimetableScreen(
     val shortDate = DateTimeFormatter.ofPattern("d MMM")
     val dayFormat = DateTimeFormatter.ofPattern("EEE")
     val message = failure ?: schoolError
-    val shownDays = if (selectedDay == "all") week?.days.orEmpty()
-        else week?.days.orEmpty().filter { it.date.toString() == selectedDay }
+    val shownDays = week?.days.orEmpty().filter { it.date.toString() == selectedDay }
+    val weekdays = week?.days.orEmpty().filter { it.date.dayOfWeek !in setOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY) }
 
-    LazyColumn(modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
-        item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+    BoxWithConstraints(modifier.fillMaxSize()) {
+    val headerLimit = minOf(maxHeight * 0.5f, maxOf(56.dp, maxHeight - 180.dp))
+    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.fillMaxWidth().heightIn(max = headerLimit).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Timetable", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text(meta?.schoolName ?: "eAsistent", style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE), maxLines = 1, overflow = TextOverflow.Clip)
+            }
+            IconButton(onClick = { refresh() }, enabled = !loading && !schoolLoading,
+                modifier = Modifier.semantics { contentDescription = "Refresh timetable" }) {
+                Text("↻", style = MaterialTheme.typography.headlineMedium)
+            }
+        }
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            ScheduleView.entries.forEachIndexed { index, view ->
+                SegmentedButton(selected = mode == view, onClick = {
+                    if (mode != view) { mode = view; showPicker = true; query = "" }
+                }, shape = SegmentedButtonDefaults.itemShape(index, ScheduleView.entries.size), label = { Text(view.label) })
+            }
+        }
+        OutlinedCard(onClick = { query = ""; showPicker = true }, modifier = Modifier.fillMaxWidth(), enabled = meta != null) {
+            Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Timetable", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    Text(meta?.schoolName ?: "eAsistent", style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE), maxLines = 1, overflow = TextOverflow.Clip)
+                    Text(mode.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(entity ?: "Choose a ${mode.label.lowercase()}", style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE), maxLines = 1, overflow = TextOverflow.Clip)
                 }
-                IconButton(onClick = { refresh() }, enabled = !loading && !schoolLoading,
-                    modifier = Modifier.semantics { contentDescription = "Refresh timetable" }) {
-                    Text("↻", style = MaterialTheme.typography.headlineMedium)
-                }
+                Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_expand_more), contentDescription = null)
             }
         }
-        item {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                ScheduleView.entries.forEachIndexed { index, view ->
-                    SegmentedButton(selected = mode == view, onClick = {
-                        if (mode != view) { mode = view; showPicker = true; query = "" }
-                    }, shape = SegmentedButtonDefaults.itemShape(index, ScheduleView.entries.size), label = { Text(view.label) })
-                }
-            }
-        }
-        item {
-            OutlinedCard(onClick = { query = ""; showPicker = true }, modifier = Modifier.fillMaxWidth(),
-                enabled = meta != null) {
-                Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(mode.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(entity ?: "Choose a ${mode.label.lowercase()}", style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE), maxLines = 1, overflow = TextOverflow.Clip)
-                    }
-                    Text("⌄", style = MaterialTheme.typography.titleLarge)
-                }
-            }
-        }
-        item {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { previousWeek?.let { weekId = it } }, enabled = previousWeek != null,
-                    modifier = Modifier.semantics { contentDescription = "Previous week" }) { Text("‹", style = MaterialTheme.typography.headlineMedium) }
-                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    WeekCalendarLabel(week?.let { anchor -> weeks.associate { id -> anchor.weekStart.plusWeeks((id - shownId).toLong()) to id } }.orEmpty(),
-                        week?.weekStart, onSelect = { weekId = it },
-                        label = week?.let { "${it.weekStart.format(shortDate)} – ${it.weekEnd.format(shortDate)}" }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = { previousWeek?.let { weekId = it } }, enabled = previousWeek != null,
+                modifier = Modifier.semantics { contentDescription = "Previous week" }) { Text("‹", style = MaterialTheme.typography.headlineMedium) }
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                WeekCalendarLabel(week?.let { anchor -> weeks.associate { id -> anchor.weekStart.plusWeeks((id - shownId).toLong()) to id } }.orEmpty(),
+                    week?.weekStart, onSelect = { weekId = it },
+                    label = week?.let { "${it.weekStart.format(shortDate)} – ${it.weekEnd.format(shortDate)}" }
                         ?: if (weekId == 0) "Current week" else "Week $weekId")
-                    if (shownId != currentWeek) TextButton(onClick = { weekId = currentWeek }) { Text("This week") }
-                }
-                IconButton(onClick = { nextWeek?.let { weekId = it } }, enabled = nextWeek != null,
-                    modifier = Modifier.semantics { contentDescription = "Next week" }) { Text("›", style = MaterialTheme.typography.headlineMedium) }
+                if (shownId != currentWeek) TextButton(onClick = { weekId = currentWeek }) { Text("This week") }
+            }
+            IconButton(onClick = { nextWeek?.let { weekId = it } }, enabled = nextWeek != null,
+                modifier = Modifier.semantics { contentDescription = "Next week" }) { Text("›", style = MaterialTheme.typography.headlineMedium) }
+        }
+        if (loading || schoolLoading) {
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+            Text(progress?.let { "Loading school timetables · ${it.first}/${it.second}" } ?: "Loading timetable…",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (message != null) ErrorNotice(message) { refresh() }
+        if (failedClasses.isNotEmpty() && failure == null) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Incomplete: ${failedClasses.size} classes unavailable", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                TextButton(onClick = { refresh(retryMissing = true) }) { Text("Retry") }
             }
         }
-        if (loading || schoolLoading) item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                LinearProgressIndicator(Modifier.fillMaxWidth())
-                Text(progress?.let { "Loading school timetables · ${it.first}/${it.second}" } ?: "Loading timetable…",
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        if (message != null) item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
-                Column(Modifier.padding(16.dp)) {
-                    Text(message, color = MaterialTheme.colorScheme.onErrorContainer)
-                    TextButton(onClick = { refresh() }) { Text("Try again") }
-                }
-            }
-        }
-        if (failedClasses.isNotEmpty() && failure == null) item {
-            Card {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Schedule is incomplete: ${failedClasses.size} classes could not be loaded.", style = MaterialTheme.typography.bodyMedium)
-                    TextButton(onClick = { refresh(retryMissing = true) }) { Text("Retry missing classes") }
-                }
-            }
         }
         if (week != null) {
-            item {
-                LazyRow(Modifier.fillMaxWidth().nestedScroll(DayStripScrollConnection), horizontalArrangement = DayStripArrangement) {
-                    item {
-                        FilterChip(selected = selectedDay == "all", onClick = { selectedDay = "all" }, label = { Text("All") })
-                    }
-                    items(week.days, key = { it.date.toString() }) { timetableDay ->
-                        FilterChip(selected = timetableDay.date.toString() == selectedDay,
-                            onClick = { selectedDay = timetableDay.date.toString() },
-                            label = { Text(timetableDay.date.format(dayFormat)) })
-                    }
+            LazyRow(Modifier.fillMaxWidth().nestedScroll(DayStripScrollConnection), horizontalArrangement = DayStripArrangement) {
+                item { FilterChip(weekView, { chooseView(true) }, label = { Text("Week") }) }
+                items(weekdays, key = { it.date.toString() }) { day ->
+                    FilterChip(!weekView && day.date.toString() == selectedDay,
+                        { selectedDay = day.date.toString(); chooseView(false) }, label = { Text(day.date.format(dayFormat)) })
                 }
             }
-            shownDays.forEach { day ->
-                item { Text(day.date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM")), style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                val cells = day.lessonsByPeriod.filterIsInstance<PeriodCell.WithLessons>()
-                if (cells.isEmpty()) item { ScheduleEmptyState("No lessons scheduled", "Try another day or week.") }
-                items(cells) { cell -> LessonPeriodCard(cell, showClasses = mode != ScheduleView.Class) }
+            if (weekView) key(meta?.schoolKey, mode, entity, week.weekStart) {
+                val content = remember(week) { PersonalSchedule(week, emptyList()) }
+                WeeklyScheduleGrid(content, Modifier.weight(1f), showClasses = mode != ScheduleView.Class) { date ->
+                    selectedDay = date.toString(); chooseView(false)
+                }
+            } else LazyColumn(Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 20.dp)) {
+                shownDays.forEach { day ->
+                    item { Text(day.date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM")), style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    val cells = day.lessonsByPeriod.filterIsInstance<PeriodCell.WithLessons>()
+                    if (cells.isEmpty()) item { ScheduleEmptyState("No lessons scheduled", "Try another day or week.") }
+                    items(cells) { cell -> LessonPeriodCard(cell, showClasses = mode != ScheduleView.Class) }
+                }
             }
-        } else if (!loading && !schoolLoading && message == null) item {
+        } else if (!loading && !schoolLoading && message == null) {
             ScheduleEmptyState("Choose a ${mode.label.lowercase()}", when (mode) {
                 ScheduleView.Class -> "View the lessons for your class."
                 ScheduleView.Teacher -> "See which classes a teacher has and where."
                 ScheduleView.Room -> "See which classes are using a room."
             })
         }
+    }
+
     }
 
     if (showPicker) {

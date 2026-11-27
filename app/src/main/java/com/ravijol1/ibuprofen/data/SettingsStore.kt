@@ -6,6 +6,42 @@ import androidx.core.content.edit
 class SettingsStore(context: Context) { 
     private val prefs = SecurePreferences.open(context, PREF_NAME)
 
+    var updateChecksEnabled: Boolean
+        get() = prefs.getBoolean("update_checks", true)
+        set(value) { prefs.edit { putBoolean("update_checks", value) } }
+    var updateLastAttempt: Long
+        get() = prefs.getLong("update_last_attempt", 0)
+        set(value) { prefs.edit { putLong("update_last_attempt", value) } }
+    var availableUpdateTag: String?
+        get() = prefs.getString("available_update", null)
+        set(value) { prefs.edit { putString("available_update", value) } }
+    var dismissedUpdateTag: String?
+        get() = prefs.getString("dismissed_update", null)
+        set(value) { prefs.edit { putString("dismissed_update", value) } }
+
+    fun scheduleWeekView(studentUuid: String): Boolean = prefs.getBoolean("schedule_week_view:$studentUuid", false)
+    fun setScheduleWeekView(studentUuid: String, enabled: Boolean) {
+        prefs.edit { putBoolean("schedule_week_view:$studentUuid", enabled) }
+    }
+
+    fun publicWeekView(schoolKey: String): Boolean = prefs.getBoolean("public_week_view:$schoolKey", false)
+    fun setPublicWeekView(schoolKey: String, enabled: Boolean) {
+        prefs.edit { putBoolean("public_week_view:$schoolKey", enabled) }
+    }
+
+    internal fun personalGroups(studentUuid: String, schoolYear: String? = null): PersonalGroups = runCatching {
+        val json = prefs.getString(groupPreferencesKey(studentUuid, schoolYear), null) ?: return@runCatching PersonalGroups()
+        val data = com.google.gson.Gson().fromJson(json, PersonalGroups::class.java)
+        // Reject malformed/incomplete preference records instead of hiding classes unexpectedly.
+        require(data.subjects.all { it.key.isNotBlank() && it.variants.all { v -> v.key.isNotBlank() } })
+        require(data.choices.values.all { it.knownVariants.none(String::isBlank) })
+        data.copy(entryChoices = data.entryChoices.orEmpty().filterValues { it.isNotEmpty() })
+    }.getOrDefault(PersonalGroups())
+
+    internal fun setPersonalGroups(studentUuid: String, schoolYear: String?, groups: PersonalGroups) {
+        prefs.edit { putString(groupPreferencesKey(studentUuid, schoolYear), com.google.gson.Gson().toJson(groups)) }
+    }
+
     var themeMode: String
         get() = prefs.getString("theme_mode", "System")?.takeIf { it in listOf("System", "Light", "Dark") } ?: "System"
         set(value) { prefs.edit { putString("theme_mode", value) } }

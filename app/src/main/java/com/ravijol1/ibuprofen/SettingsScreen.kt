@@ -1,6 +1,9 @@
 package com.ravijol1.ibuprofen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -8,6 +11,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.ravijol1.ibuprofen.data.ChildProfile
 import com.ravijol1.ibuprofen.data.NetworkProvider
@@ -17,8 +24,11 @@ internal fun SettingsScreen(reminders: Boolean, remindersError: String?, child: 
     proxyEnabled: Boolean, proxyUrl: String, exactAlarmsAllowed: Boolean, notificationsAllowed: Boolean,
     onAllowPreciseReminders: () -> Unit, onOpenNotificationSettings: () -> Unit,
     onRemindersChange: (Boolean) -> Unit,
-    themeMode: String, onThemeChange: (String) -> Unit,
+    themeMode: String, onThemeChange: (String) -> Unit, updates: UpdateUi,
     onProxySave: (Boolean, String) -> Unit) {
+    var appearanceExpanded by rememberSaveable { mutableStateOf(false) }
+    val appearanceRotation by animateFloatAsState(if (appearanceExpanded) 180f else 0f,
+        animationSpec = tween(200), label = "Appearance expansion")
     var advanced by rememberSaveable { mutableStateOf(false) }
     var draftEnabled by rememberSaveable(proxyEnabled) { mutableStateOf(proxyEnabled) }
     var draftUrl by rememberSaveable(proxyUrl) { mutableStateOf(proxyUrl) }
@@ -54,9 +64,17 @@ internal fun SettingsScreen(reminders: Boolean, remindersError: String?, child: 
         }
         remindersError?.let { notice -> item { ErrorNotice(notice) } }
         item {
-            OutlinedCard {
-                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Appearance", style = MaterialTheme.typography.titleMedium)
+            OutlinedCard(onClick = { appearanceExpanded = !appearanceExpanded },
+                modifier = Modifier.semantics { stateDescription = if (appearanceExpanded) "Expanded" else "Collapsed" }) {
+                Column(Modifier.fillMaxWidth().animateContentSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Appearance", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                        Text(themeMode, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.width(8.dp))
+                        Icon(painterResource(R.drawable.ic_expand_more), contentDescription = null,
+                            modifier = Modifier.size(24.dp).rotate(appearanceRotation), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (appearanceExpanded) Column {
                     listOf("System", "Light", "Dark").forEach { mode ->
                         Row(Modifier.fillMaxWidth().selectable(selected = themeMode == mode,
                             role = androidx.compose.ui.semantics.Role.RadioButton, onClick = { onThemeChange(mode) }),
@@ -65,6 +83,22 @@ internal fun SettingsScreen(reminders: Boolean, remindersError: String?, child: 
                             Spacer(Modifier.width(12.dp))
                             Text(mode, Modifier.padding(vertical = 12.dp))
                         }
+                    }
+                    }
+                }
+            }
+        }
+        item {
+            OutlinedCard {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Check for updates", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                        Switch(updates.enabled, updates.setEnabled)
+                    }
+                    Text(if (updates.enabled) updates.status else "Automatic update checks are off.", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TextButton(onClick = updates.checkNow, enabled = updates.enabled && !updates.checking) {
+                        Text(if (updates.checking) "Checking…" else "Check now")
                     }
                 }
             }
